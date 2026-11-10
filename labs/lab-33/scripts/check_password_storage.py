@@ -14,11 +14,7 @@ def main():
     try:
         users = db.scalars(select(User).order_by(User.id)).all()
         for user in users:
-            status = (
-                "HASHED"
-                if user.password_hash.startswith("$argon2")
-                else "LEGACY"
-            )
+            status = "HASHED" if user.password_hash.startswith("$argon2") else "LEGACY"
             print(f"{user.username}: {status}")
     finally:
         db.close()

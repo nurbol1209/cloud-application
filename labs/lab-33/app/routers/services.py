@@ -21,9 +21,7 @@ router = APIRouter(prefix="/services", tags=["Services"])
 @router.get(
     "",
     summary="Получить список сервисов",
-    description=(
-        "Возвращает все сервисы или только сервисы с указанным состоянием."
-    ),
+    description=("Возвращает все сервисы или только сервисы с указанным состоянием."),
 )
 def read_services(
     status: ServiceStatus | None = Query(
@@ -32,9 +30,7 @@ def read_services(
         examples=["running"],
     ),
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_permission("services.read")
-    ),
+    current_user: User = Depends(require_permission("services.read")),
 ):
     if status is None:
         services = get_all_services(db)
@@ -55,9 +51,7 @@ def read_service(
         gt=0,
     ),
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_permission("services.read")
-    ),
+    current_user: User = Depends(require_permission("services.read")),
 ):
     service = get_service_by_id(db, service_id)
     if service is None:
@@ -77,9 +71,7 @@ def read_service(
 def add_service(
     service: ServiceCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_permission("services.write")
-    ),
+    current_user: User = Depends(require_permission("services.write")),
 ):
     created = create_service(db, service)
     if created is None:
@@ -103,9 +95,7 @@ def edit_service(
     ),
     service: ServiceCreate = ...,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_permission("services.write")
-    ),
+    current_user: User = Depends(require_permission("services.write")),
 ):
     updated, error = update_service(db, service_id, service)
     if error == "service":
@@ -127,9 +117,7 @@ def remove_service(
         gt=0,
     ),
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_permission("services.write")
-    ),
+    current_user: User = Depends(require_permission("services.write")),
 ):
     service = get_service_by_id(db, service_id)
     if service is None:

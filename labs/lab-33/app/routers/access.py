@@ -27,9 +27,7 @@ router = APIRouter(
 )
 def read_roles(
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_permission("roles.manage")
-    ),
+    current_user: User = Depends(require_permission("roles.manage")),
 ):
     roles = get_roles(db)
     return [
@@ -37,9 +35,7 @@ def read_roles(
             "id": role.id,
             "name": role.name,
             "description": role.description,
-            "permissions": sorted(
-                permission.code for permission in role.permissions
-            ),
+            "permissions": sorted(permission.code for permission in role.permissions),
         }
         for role in roles
     ]
@@ -53,9 +49,7 @@ def read_roles(
 def read_user_access(
     user_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_permission("users.manage")
-    ),
+    current_user: User = Depends(require_permission("users.manage")),
 ):
     result = get_user_access(db, user_id)
     if result is None:
@@ -72,9 +66,7 @@ def update_user_role(
     user_id: int,
     role_data: RoleAssign,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_permission("roles.manage")
-    ),
+    current_user: User = Depends(require_permission("roles.manage")),
 ):
     user, error = assign_role(db, user_id, role_data.role_name)
     if error == "user":
@@ -98,11 +90,7 @@ def read_access_summary(
     return {
         "roles": [role.name for role in roles],
         "permissions": sorted(
-            {
-                permission.code
-                for role in roles
-                for permission in role.permissions
-            }
+            {permission.code for role in roles for permission in role.permissions}
         ),
         "requested_by": current_user.username,
     }

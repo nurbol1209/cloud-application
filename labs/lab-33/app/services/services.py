@@ -29,11 +29,7 @@ def get_service_type(db: Session, type_name: str):
 
 
 def get_services_by_status(db: Session, status: str):
-    statement = (
-        select(Service)
-        .where(Service.status == status)
-        .order_by(Service.id)
-    )
+    statement = select(Service).where(Service.status == status).order_by(Service.id)
     return db.scalars(statement).all()
 
 

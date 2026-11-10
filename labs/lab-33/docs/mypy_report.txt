@@ -1,0 +1,3 @@
+app\config.py:70: error: Missing named argument "lab_db_password" for "Settings"  [call-arg]
+app\config.py:70: error: Missing named argument "auth_secret" for "Settings"  [call-arg]
+Found 2 errors in 1 file (checked 1 source file)

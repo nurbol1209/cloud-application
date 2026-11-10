@@ -21,6 +21,7 @@ if is_sqlite:
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
 
+
 SessionLocal = sessionmaker(
     bind=engine,
     autoflush=False,

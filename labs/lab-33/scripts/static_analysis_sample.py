@@ -1,10 +1,7 @@
-import sys, os
-from pathlib import Path
-
-def build_message( name ):
-    unused_value = 10
-    if name == None:
+def build_message(name):
+    if name is None:
         return "Unknown"
     return "Service: " + name
+
 
 print(build_message("notification"))

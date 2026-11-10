@@ -42,19 +42,14 @@ async def upload_object(
         File(description="Файл для сохранения в объектном хранилище"),
     ],
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_permission("objects.write")
-    ),
+    current_user: User = Depends(require_permission("objects.write")),
 ):
     try:
         obj = await save_object(db, file)
     except FileTooLargeError as error:
         raise HTTPException(
             status_code=413,
-            detail=(
-                "File is too large. "
-                f"Maximum size is {error.max_size} bytes"
-            ),
+            detail=(f"File is too large. Maximum size is {error.max_size} bytes"),
         )
     return object_to_dict(obj)
 
@@ -66,9 +61,7 @@ async def upload_object(
 )
 def read_objects(
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_permission("objects.read")
-    ),
+    current_user: User = Depends(require_permission("objects.read")),
 ):
     objects = get_objects(db)
     return [object_to_dict(obj) for obj in objects]
@@ -82,9 +75,7 @@ def read_objects(
 def read_object(
     object_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_permission("objects.read")
-    ),
+    current_user: User = Depends(require_permission("objects.read")),
 ):
     obj = get_object(db, object_id)
     if obj is None:
@@ -99,9 +90,7 @@ def read_object(
 def download_object(
     object_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_permission("objects.read")
-    ),
+    current_user: User = Depends(require_permission("objects.read")),
 ):
     obj = get_object(db, object_id)
     if obj is None:
@@ -125,9 +114,7 @@ def download_object(
 def remove_object(
     object_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_permission("objects.write")
-    ),
+    current_user: User = Depends(require_permission("objects.write")),
 ):
     obj = get_object(db, object_id)
     if obj is None:

@@ -21,9 +21,7 @@ def register_user(db: Session, user_data: UserRegister) -> User | None:
     if existing_user is not None:
         return None
 
-    default_role = db.scalar(
-        select(Role).where(Role.name == "viewer")
-    )
+    default_role = db.scalar(select(Role).where(Role.name == "viewer"))
 
     user = User(
         username=user_data.username,
@@ -99,8 +97,6 @@ def logout_user(db: Session, token: str) -> bool:
 
 
 def logout_all_sessions(db: Session, user_id: int) -> int:
-    result = db.execute(
-        delete(AuthSession).where(AuthSession.user_id == user_id)
-    )
+    result = db.execute(delete(AuthSession).where(AuthSession.user_id == user_id))
     db.commit()
     return result.rowcount or 0

@@ -17,9 +17,7 @@ bearer_scheme = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials | None = Depends(
-        bearer_scheme
-    ),
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
     if credentials is None:
@@ -56,8 +54,7 @@ def require_permission(permission_code: str):
             )
 
         user_permissions = {
-            permission.code
-            for permission in current_user.role.permissions
+            permission.code for permission in current_user.role.permissions
         }
         if permission_code not in user_permissions:
             logger.warning(
@@ -100,16 +97,12 @@ def require_any_permission(*permission_codes: str):
             )
 
         user_permissions = {
-            permission.code
-            for permission in current_user.role.permissions
+            permission.code for permission in current_user.role.permissions
         }
         if not user_permissions.intersection(permission_codes):
             raise HTTPException(
                 status_code=403,
-                detail=(
-                    "Insufficient permissions: "
-                    + ", ".join(permission_codes)
-                ),
+                detail=("Insufficient permissions: " + ", ".join(permission_codes)),
             )
         return current_user
 

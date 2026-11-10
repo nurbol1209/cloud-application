@@ -1,7 +1,6 @@
 import json
 import logging
 import logging.config
-import sys
 from datetime import datetime, timezone
 
 from app.request_context import get_request_id

@@ -52,12 +52,12 @@ def main() -> int:
 
     check(db.get("image") == "postgres:18", "db использует postgres:18")
     check(
-        app.get("image") == "cloud-application:0.5",
-        "app использует cloud-application:0.5",
+        app.get("image") == "cloud-application:0.6",
+        "app использует cloud-application:0.6",
     )
     check(
-        migrate.get("image") == "cloud-application:0.5",
-        "migrate использует cloud-application:0.5",
+        migrate.get("image") == "cloud-application:0.6",
+        "migrate использует cloud-application:0.6",
     )
     db_env = db.get("environment", {})
     check(db_env.get("POSTGRES_DB") == "cloud_application", "POSTGRES_DB")
@@ -75,8 +75,10 @@ def main() -> int:
         "postgres_data подключён к db",
     )
     check(
-        any("docker-entrypoint-initdb.d" in item and item.endswith(":ro")
-            for item in db_volumes),
+        any(
+            "docker-entrypoint-initdb.d" in item and item.endswith(":ro")
+            for item in db_volumes
+        ),
         "init SQL смонтирован только для чтения",
     )
 
@@ -99,8 +101,7 @@ def main() -> int:
         "app ждёт успешного завершения migrate",
     )
     check(
-        app_depends.get("notification", {}).get("condition")
-        == "service_started",
+        app_depends.get("notification", {}).get("condition") == "service_started",
         "app ждёт запуска notification",
     )
 
@@ -141,8 +142,8 @@ def main() -> int:
 
     print("\n== Notification Service ==")
     check(
-        notification.get("image") == "cloud-application:0.5",
-        "notification использует тот же образ cloud-application:0.5",
+        notification.get("image") == "cloud-application:0.6",
+        "notification использует тот же образ cloud-application:0.6",
     )
     command = " ".join(str(item) for item in notification.get("command", []))
     check(
@@ -186,7 +187,8 @@ def main() -> int:
         item.get("target") for item in app.get("secrets", []) if isinstance(item, dict)
     }
     check(
-        app_secret_targets == {
+        app_secret_targets
+        == {
             "/app/secrets/lab_db_password",
             "/app/secrets/auth_secret",
         },

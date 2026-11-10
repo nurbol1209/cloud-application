@@ -27,9 +27,7 @@ router = APIRouter(
 )
 async def forward_notification(
     notification: NotificationSendRequest,
-    current_user: User = Depends(
-        require_permission("services.write")
-    ),
+    current_user: User = Depends(require_permission("services.write")),
 ):
     try:
         result = await send_notification(

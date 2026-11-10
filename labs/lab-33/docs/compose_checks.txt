@@ -1,8 +1,8 @@
 == Сервисы ==
 [OK] сервисы app, db, migrate, notification
 [OK] db использует postgres:18
-[OK] app использует cloud-application:0.5
-[OK] migrate использует cloud-application:0.5
+[OK] app использует cloud-application:0.6
+[OK] migrate использует cloud-application:0.6
 [OK] POSTGRES_DB
 [OK] POSTGRES_USER
 [OK] пароль БД читается из файла секрета
@@ -30,7 +30,7 @@
 [OK] app: LOG_LEVEL=INFO
 
 == Notification Service ==
-[OK] notification использует тот же образ cloud-application:0.5
+[OK] notification использует тот же образ cloud-application:0.6
 [OK] notification запускает собственное FastAPI-приложение
 [OK] notification слушает порт 9000
 [OK] notification не публикует host port

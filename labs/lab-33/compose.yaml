@@ -24,7 +24,7 @@ services:
       - cloud-network
 
   migrate:
-    image: cloud-application:0.5
+    image: cloud-application:0.6
     env_file:
       - .env
     environment:
@@ -57,7 +57,7 @@ services:
       - cloud-network
 
   app:
-    image: cloud-application:0.5
+    image: cloud-application:0.6
     env_file:
       - .env
     environment:
@@ -90,7 +90,7 @@ services:
       - cloud-network
 
   notification:
-    image: cloud-application:0.5
+    image: cloud-application:0.6
     environment:
       LOG_LEVEL: INFO
     command:

@@ -7,11 +7,7 @@ from app.config import settings
 
 
 def configured(value) -> str:
-    return (
-        "CONFIGURED"
-        if value.get_secret_value()
-        else "EMPTY"
-    )
+    return "CONFIGURED" if value.get_secret_value() else "EMPTY"
 
 
 def main() -> None:

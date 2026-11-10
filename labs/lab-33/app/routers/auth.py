@@ -75,11 +75,7 @@ def read_current_user(
     return {
         "id": current_user.id,
         "username": current_user.username,
-        "role": (
-            current_user.role.name
-            if current_user.role
-            else None
-        ),
+        "role": (current_user.role.name if current_user.role else None),
     }
 
 

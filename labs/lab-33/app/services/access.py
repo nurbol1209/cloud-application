@@ -55,9 +55,7 @@ ROLE_MODEL = {
 def initialize_access_model(db: Session) -> None:
     permissions = {}
     for code, description in PERMISSIONS.items():
-        permission = db.scalar(
-            select(Permission).where(Permission.code == code)
-        )
+        permission = db.scalar(select(Permission).where(Permission.code == code))
         if permission is None:
             permission = Permission(code=code, description=description)
             db.add(permission)
@@ -65,9 +63,7 @@ def initialize_access_model(db: Session) -> None:
         permissions[code] = permission
 
     for role_name, role_data in ROLE_MODEL.items():
-        role = db.scalar(
-            select(Role).where(Role.name == role_name)
-        )
+        role = db.scalar(select(Role).where(Role.name == role_name))
         if role is None:
             role = Role(
                 name=role_name,
@@ -75,9 +71,7 @@ def initialize_access_model(db: Session) -> None:
             )
             db.add(role)
             db.flush()
-        role.permissions = [
-            permissions[code] for code in role_data["permissions"]
-        ]
+        role.permissions = [permissions[code] for code in role_data["permissions"]]
 
     db.commit()
 
@@ -87,9 +81,7 @@ def assign_default_roles(db: Session) -> None:
     if viewer is None:
         return
 
-    users = db.scalars(
-        select(User).where(User.role_id.is_(None))
-    ).all()
+    users = db.scalars(select(User).where(User.role_id.is_(None))).all()
     for user in users:
         user.role_id = viewer.id
     db.commit()
@@ -131,9 +123,7 @@ def get_user_access(db: Session, user_id: int) -> dict | None:
     permissions = []
     if user.role is not None:
         role_name = user.role.name
-        permissions = sorted(
-            permission.code for permission in user.role.permissions
-        )
+        permissions = sorted(permission.code for permission in user.role.permissions)
 
     return {
         "user_id": user.id,

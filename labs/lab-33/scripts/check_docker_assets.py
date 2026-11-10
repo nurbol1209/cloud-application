@@ -116,9 +116,7 @@ def main() -> int:
         base = from_lines[0]
         print(f"\nБазовый образ: {base}")
         if f"python:{EXPECTED_PYTHON}-slim" not in base:
-            failures.append(
-                f"базовый образ не соответствует Python {EXPECTED_PYTHON}"
-            )
+            failures.append(f"базовый образ не соответствует Python {EXPECTED_PYTHON}")
 
     for keyword in ["WORKDIR", "USER", "EXPOSE", "CMD", "LABEL"]:
         if keyword not in keywords:
@@ -134,18 +132,27 @@ def main() -> int:
         failures.append("pip install выполняется с кэшем")
 
     copy_requirements = next(
-        (i for i, (_, k, rest) in enumerate(instructions)
-         if k == "COPY" and "requirements.txt" in rest),
+        (
+            i
+            for i, (_, k, rest) in enumerate(instructions)
+            if k == "COPY" and "requirements.txt" in rest
+        ),
         -1,
     )
     copy_app = next(
-        (i for i, (_, k, rest) in enumerate(instructions)
-         if k == "COPY" and " app " in f" {rest} "),
+        (
+            i
+            for i, (_, k, rest) in enumerate(instructions)
+            if k == "COPY" and " app " in f" {rest} "
+        ),
         -1,
     )
     run_pip = next(
-        (i for i, (_, k, rest) in enumerate(instructions)
-         if k == "RUN" and "pip install" in rest),
+        (
+            i
+            for i, (_, k, rest) in enumerate(instructions)
+            if k == "RUN" and "pip install" in rest
+        ),
         -1,
     )
     if -1 in (copy_requirements, run_pip, copy_app):

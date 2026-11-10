@@ -26,7 +26,7 @@ USER appuser
 EXPOSE 8000
 
 LABEL org.opencontainers.image.title="Cloud Application" \
-      org.opencontainers.image.version="0.5" \
+      org.opencontainers.image.version="0.6" \
       org.opencontainers.image.description="Cloud Application REST API on FastAPI"
 
 CMD ["python", "run.py"]

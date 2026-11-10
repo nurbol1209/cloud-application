@@ -56,9 +56,7 @@ class Settings(BaseSettings):
         if self.db_backend == "sqlite":
             return "sqlite:///./cloud_application.db"
 
-        password = quote_plus(
-            self.lab_db_password.get_secret_value()
-        )
+        password = quote_plus(self.lab_db_password.get_secret_value())
         return (
             "postgresql+psycopg2://"
             f"{self.db_user}:"

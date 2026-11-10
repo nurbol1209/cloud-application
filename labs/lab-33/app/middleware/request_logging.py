@@ -15,10 +15,7 @@ def register_request_logging(
 ) -> None:
     @app.middleware("http")
     async def request_logging(request: Request, call_next):
-        request_id = (
-            request.headers.get("X-Request-ID")
-            or uuid4().hex
-        )
+        request_id = request.headers.get("X-Request-ID") or uuid4().hex
         token = request_id_var.set(request_id)
         started = time.perf_counter()
 

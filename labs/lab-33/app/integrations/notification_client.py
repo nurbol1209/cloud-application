@@ -25,9 +25,7 @@ class NotificationServiceTimeout(NotificationServiceError):
 class NotificationServiceBadResponse(NotificationServiceError):
     def __init__(self, status_code: int):
         self.status_code = status_code
-        super().__init__(
-            f"Notification service returned HTTP {status_code}"
-        )
+        super().__init__(f"Notification service returned HTTP {status_code}")
 
 
 async def send_notification(
@@ -90,9 +88,7 @@ async def send_notification(
                     },
                 )
 
-                remote_request_id = response.headers.get(
-                    "X-Request-ID"
-                )
+                remote_request_id = response.headers.get("X-Request-ID")
                 if remote_request_id != get_request_id():
                     logger.warning(
                         "Request ID mismatch",
@@ -110,9 +106,7 @@ async def send_notification(
                     "Notification service unavailable",
                     extra={
                         "service": "cloud-application",
-                        "event": (
-                            "notification_service_unavailable"
-                        ),
+                        "event": ("notification_service_unavailable"),
                         "target_service": "notification",
                         "attempt": attempt,
                         "error_type": type(exc).__name__,
@@ -131,10 +125,7 @@ async def send_notification(
                 },
             )
 
-            delay = (
-                settings.notification_retry_delay_seconds
-                * (2 ** (attempt - 1))
-            )
+            delay = settings.notification_retry_delay_seconds * (2 ** (attempt - 1))
             await asyncio.sleep(delay)
         except httpx.TimeoutException as exc:
             logger.error(
@@ -158,9 +149,7 @@ async def send_notification(
                     "error_type": type(exc).__name__,
                 },
             )
-            raise NotificationServiceBadResponse(
-                exc.response.status_code
-            ) from exc
+            raise NotificationServiceBadResponse(exc.response.status_code) from exc
         except httpx.RequestError as exc:
             logger.error(
                 "Notification service unavailable",
@@ -180,10 +169,7 @@ async def send_notification(
 async def get_notification(
     notification_id: int,
 ) -> dict:
-    url = (
-        f"{settings.notification_service_url}"
-        f"/notifications/{notification_id}"
-    )
+    url = f"{settings.notification_service_url}/notifications/{notification_id}"
 
     async with httpx.AsyncClient(
         timeout=httpx.Timeout(settings.notification_timeout_seconds)
