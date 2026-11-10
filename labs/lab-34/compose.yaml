@@ -1,0 +1,119 @@
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: cloud_application
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/lab_db_password
+    secrets:
+      - lab_db_password
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./docker/postgres:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U postgres -d cloud_application"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - cloud-network
+
+  migrate:
+    image: cloud-application:0.7
+    env_file:
+      - .env
+    environment:
+      DB_BACKEND: postgresql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: cloud_application
+      DB_USER: postgres
+      HTTPS_ENABLED: "false"
+    secrets:
+      - source: lab_db_password
+        target: /app/secrets/lab_db_password
+      - source: auth_secret
+        target: /app/secrets/auth_secret
+    depends_on:
+      db:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - >
+        alembic upgrade head &&
+        python -c "from app.data.database import SessionLocal;
+        from app.services.access import initialize_access_model, assign_default_roles;
+        db = SessionLocal();
+        initialize_access_model(db);
+        assign_default_roles(db);
+        db.close()"
+    networks:
+      - cloud-network
+
+  app:
+    image: cloud-application:0.7
+    env_file:
+      - .env
+    environment:
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      HTTPS_ENABLED: "false"
+      DB_BACKEND: postgresql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: cloud_application
+      DB_USER: postgres
+      NOTIFICATION_SERVICE_URL: http://notification:9000
+      NOTIFICATION_TIMEOUT_SECONDS: "2.0"
+      NOTIFICATION_MAX_ATTEMPTS: "3"
+      NOTIFICATION_RETRY_DELAY_SECONDS: "0.5"
+      LOG_LEVEL: INFO
+    ports:
+      - "127.0.0.1:8080:8000"
+    secrets:
+      - source: lab_db_password
+        target: /app/secrets/lab_db_password
+      - source: auth_secret
+        target: /app/secrets/auth_secret
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      notification:
+        condition: service_started
+    networks:
+      - cloud-network
+
+  notification:
+    image: cloud-application:0.7
+    environment:
+      LOG_LEVEL: INFO
+    command:
+      - python
+      - -m
+      - uvicorn
+      - app.notification_service.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "9000"
+    networks:
+      - cloud-network
+
+volumes:
+  postgres_data:
+
+networks:
+  cloud-network:
+    driver: bridge
+
+secrets:
+  lab_db_password:
+    file: ./secrets/lab_db_password
+  auth_secret:
+    file: ./secrets/auth_secret

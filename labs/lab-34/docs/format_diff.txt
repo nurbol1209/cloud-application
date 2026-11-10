@@ -1,0 +1,647 @@
+--- app\config.py
++++ app\config.py
+@@ -56,9 +56,7 @@
+         if self.db_backend == "sqlite":
+             return "sqlite:///./cloud_application.db"
+ 
+-        password = quote_plus(
+-            self.lab_db_password.get_secret_value()
+-        )
++        password = quote_plus(self.lab_db_password.get_secret_value())
+         return (
+             "postgresql+psycopg2://"
+             f"{self.db_user}:"
+
+--- app\data\database.py
++++ app\data\database.py
+@@ -21,6 +21,7 @@
+         cursor.execute("PRAGMA foreign_keys=ON")
+         cursor.close()
+ 
++
+ SessionLocal = sessionmaker(
+     bind=engine,
+     autoflush=False,
+
+--- app\integrations\notification_client.py
++++ app\integrations\notification_client.py
+@@ -25,9 +25,7 @@
+ class NotificationServiceBadResponse(NotificationServiceError):
+     def __init__(self, status_code: int):
+         self.status_code = status_code
+-        super().__init__(
+-            f"Notification service returned HTTP {status_code}"
+-        )
++        super().__init__(f"Notification service returned HTTP {status_code}")
+ 
+ 
+ async def send_notification(
+@@ -90,9 +88,7 @@
+                     },
+                 )
+ 
+-                remote_request_id = response.headers.get(
+-                    "X-Request-ID"
+-                )
++                remote_request_id = response.headers.get("X-Request-ID")
+                 if remote_request_id != get_request_id():
+                     logger.warning(
+                         "Request ID mismatch",
+@@ -110,9 +106,7 @@
+                     "Notification service unavailable",
+                     extra={
+                         "service": "cloud-application",
+-                        "event": (
+-                            "notification_service_unavailable"
+-                        ),
++                        "event": ("notification_service_unavailable"),
+                         "target_service": "notification",
+                         "attempt": attempt,
+                         "error_type": type(exc).__name__,
+@@ -131,10 +125,7 @@
+                 },
+             )
+ 
+-            delay = (
+-                settings.notification_retry_delay_seconds
+-                * (2 ** (attempt - 1))
+-            )
++            delay = settings.notification_retry_delay_seconds * (2 ** (attempt - 1))
+             await asyncio.sleep(delay)
+         except httpx.TimeoutException as exc:
+             logger.error(
+@@ -158,9 +149,7 @@
+                     "error_type": type(exc).__name__,
+                 },
+             )
+-            raise NotificationServiceBadResponse(
+-                exc.response.status_code
+-            ) from exc
++            raise NotificationServiceBadResponse(exc.response.status_code) from exc
+         except httpx.RequestError as exc:
+             logger.error(
+                 "Notification service unavailable",
+@@ -180,10 +169,7 @@
+ async def get_notification(
+     notification_id: int,
+ ) -> dict:
+-    url = (
+-        f"{settings.notification_service_url}"
+-        f"/notifications/{notification_id}"
+-    )
++    url = f"{settings.notification_service_url}/notifications/{notification_id}"
+ 
+     async with httpx.AsyncClient(
+         timeout=httpx.Timeout(settings.notification_timeout_seconds)
+
+--- app\main.py
++++ app\main.py
+@@ -23,29 +23,25 @@
+     {
+         "name": "Services",
+         "description": (
+-            "Операции с облачными сервисами: просмотр, создание, "
+-            "изменение и удаление."
++            "Операции с облачными сервисами: просмотр, создание, изменение и удаление."
+         ),
+     },
+     {
+         "name": "Objects",
+         "description": (
+-            "Файловое хранилище: загрузка, метаданные, скачивание "
+-            "и удаление объектов."
++            "Файловое хранилище: загрузка, метаданные, скачивание и удаление объектов."
+         ),
+     },
+     {
+         "name": "Authentication",
+         "description": (
+-            "Регистрация пользователей, вход, проверка и завершение "
+-            "сеансов."
++            "Регистрация пользователей, вход, проверка и завершение сеансов."
+         ),
+     },
+     {
+         "name": "Access Model",
+         "description": (
+-            "Роли и разрешения: матрица доступа, роль пользователя "
+-            "и её изменение."
++            "Роли и разрешения: матрица доступа, роль пользователя и её изменение."
+         ),
+     },
+     {
+
+--- app\middleware\request_logging.py
++++ app\middleware\request_logging.py
+@@ -15,10 +15,7 @@
+ ) -> None:
+     @app.middleware("http")
+     async def request_logging(request: Request, call_next):
+-        request_id = (
+-            request.headers.get("X-Request-ID")
+-            or uuid4().hex
+-        )
++        request_id = request.headers.get("X-Request-ID") or uuid4().hex
+         token = request_id_var.set(request_id)
+         started = time.perf_counter()
+ 
+
+--- app\routers\access.py
++++ app\routers\access.py
+@@ -27,9 +27,7 @@
+ )
+ def read_roles(
+     db: Session = Depends(get_db),
+-    current_user: User = Depends(
+-        require_permission("roles.manage")
+-    ),
++    current_user: User = Depends(require_permission("roles.manage")),
+ ):
+     roles = get_roles(db)
+     return [
+@@ -37,9 +35,7 @@
+             "id": role.id,
+             "name": role.name,
+             "description": role.description,
+-            "permissions": sorted(
+-                permission.code for permission in role.permissions
+-            ),
++            "permissions": sorted(permission.code for permission in role.permissions),
+         }
+         for role in roles
+     ]
+@@ -53,9 +49,7 @@
+ def read_user_access(
+     user_id: int,
+     db: Session = Depends(get_db),
+-    current_user: User = Depends(
+-        require_permission("users.manage")
+-    ),
++    current_user: User = Depends(require_permission("users.manage")),
+ ):
+     result = get_user_access(db, user_id)
+     if result is None:
+@@ -72,9 +66,7 @@
+     user_id: int,
+     role_data: RoleAssign,
+     db: Session = Depends(get_db),
+-    current_user: User = Depends(
+-        require_permission("roles.manage")
+-    ),
++    current_user: User = Depends(require_permission("roles.manage")),
+ ):
+     user, error = assign_role(db, user_id, role_data.role_name)
+     if error == "user":
+@@ -98,11 +90,7 @@
+     return {
+         "roles": [role.name for role in roles],
+         "permissions": sorted(
+-            {
+-                permission.code
+-                for role in roles
+-                for permission in role.permissions
+-            }
++            {permission.code for role in roles for permission in role.permissions}
+         ),
+         "requested_by": current_user.username,
+     }
+
+--- app\routers\auth.py
++++ app\routers\auth.py
+@@ -75,11 +75,7 @@
+     return {
+         "id": current_user.id,
+         "username": current_user.username,
+-        "role": (
+-            current_user.role.name
+-            if current_user.role
+-            else None
+-        ),
++        "role": (current_user.role.name if current_user.role else None),
+     }
+ 
+ 
+
+--- app\routers\integration.py
++++ app\routers\integration.py
+@@ -27,9 +27,7 @@
+ )
+ async def forward_notification(
+     notification: NotificationSendRequest,
+-    current_user: User = Depends(
+-        require_permission("services.write")
+-    ),
++    current_user: User = Depends(require_permission("services.write")),
+ ):
+     try:
+         result = await send_notification(
+
+--- app\routers\objects.py
++++ app\routers\objects.py
+@@ -42,19 +42,14 @@
+         File(description="Файл для сохранения в объектном хранилище"),
+     ],
+     db: Session = Depends(get_db),
+-    current_user: User = Depends(
+-        require_permission("objects.write")
+-    ),
++    current_user: User = Depends(require_permission("objects.write")),
+ ):
+     try:
+         obj = await save_object(db, file)
+     except FileTooLargeError as error:
+         raise HTTPException(
+             status_code=413,
+-            detail=(
+-                "File is too large. "
+-                f"Maximum size is {error.max_size} bytes"
+-            ),
++            detail=(f"File is too large. Maximum size is {error.max_size} bytes"),
+         )
+     return object_to_dict(obj)
+ 
+@@ -66,9 +61,7 @@
+ )
+ def read_objects(
+     db: Session = Depends(get_db),
+-    current_user: User = Depends(
+-        require_permission("objects.read")
+-    ),
++    current_user: User = Depends(require_permission("objects.read")),
+ ):
+     objects = get_objects(db)
+     return [object_to_dict(obj) for obj in objects]
+@@ -82,9 +75,7 @@
+ def read_object(
+     object_id: int,
+     db: Session = Depends(get_db),
+-    current_user: User = Depends(
+-        require_permission("objects.read")
+-    ),
++    current_user: User = Depends(require_permission("objects.read")),
+ ):
+     obj = get_object(db, object_id)
+     if obj is None:
+@@ -99,9 +90,7 @@
+ def download_object(
+     object_id: int,
+     db: Session = Depends(get_db),
+-    current_user: User = Depends(
+-        require_permission("objects.read")
+-    ),
++    current_user: User = Depends(require_permission("objects.read")),
+ ):
+     obj = get_object(db, object_id)
+     if obj is None:
+@@ -125,9 +114,7 @@
+ def remove_object(
+     object_id: int,
+     db: Session = Depends(get_db),
+-    current_user: User = Depends(
+-        require_permission("objects.write")
+-    ),
++    current_user: User = Depends(require_permission("objects.write")),
+ ):
+     obj = get_object(db, object_id)
+     if obj is None:
+
+--- app\routers\services.py
++++ app\routers\services.py
+@@ -21,9 +21,7 @@
+ @router.get(
+     "",
+     summary="Получить список сервисов",
+-    description=(
+-        "Возвращает все сервисы или только сервисы с указанным состоянием."
+-    ),
++    description=("Возвращает все сервисы или только сервисы с указанным состоянием."),
+ )
+ def read_services(
+     status: ServiceStatus | None = Query(
+@@ -32,9 +30,7 @@
+         examples=["running"],
+     ),
+     db: Session = Depends(get_db),
+-    current_user: User = Depends(
+-        require_permission("services.read")
+-    ),
++    current_user: User = Depends(require_permission("services.read")),
+ ):
+     if status is None:
+         services = get_all_services(db)
+@@ -55,9 +51,7 @@
+         gt=0,
+     ),
+     db: Session = Depends(get_db),
+-    current_user: User = Depends(
+-        require_permission("services.read")
+-    ),
++    current_user: User = Depends(require_permission("services.read")),
+ ):
+     service = get_service_by_id(db, service_id)
+     if service is None:
+@@ -77,9 +71,7 @@
+ def add_service(
+     service: ServiceCreate,
+     db: Session = Depends(get_db),
+-    current_user: User = Depends(
+-        require_permission("services.write")
+-    ),
++    current_user: User = Depends(require_permission("services.write")),
+ ):
+     created = create_service(db, service)
+     if created is None:
+@@ -103,9 +95,7 @@
+     ),
+     service: ServiceCreate = ...,
+     db: Session = Depends(get_db),
+-    current_user: User = Depends(
+-        require_permission("services.write")
+-    ),
++    current_user: User = Depends(require_permission("services.write")),
+ ):
+     updated, error = update_service(db, service_id, service)
+     if error == "service":
+@@ -127,9 +117,7 @@
+         gt=0,
+     ),
+     db: Session = Depends(get_db),
+-    current_user: User = Depends(
+-        require_permission("services.write")
+-    ),
++    current_user: User = Depends(require_permission("services.write")),
+ ):
+     service = get_service_by_id(db, service_id)
+     if service is None:
+
+--- app\routers\system.py
++++ app\routers\system.py
+@@ -42,8 +42,7 @@
+ def course():
+     return {
+         "discipline": (
+-            "Управление работами и разработка программного обеспечения "
+-            "облачных систем"
++            "Управление работами и разработка программного обеспечения облачных систем"
+         ),
+         "laboratory": 23,
+         "project": settings.app_name,
+
+--- app\security\authorization.py
++++ app\security\authorization.py
+@@ -17,9 +17,7 @@
+ 
+ 
+ def get_current_user(
+-    credentials: HTTPAuthorizationCredentials | None = Depends(
+-        bearer_scheme
+-    ),
++    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+     db: Session = Depends(get_db),
+ ) -> User:
+     if credentials is None:
+@@ -56,8 +54,7 @@
+             )
+ 
+         user_permissions = {
+-            permission.code
+-            for permission in current_user.role.permissions
++            permission.code for permission in current_user.role.permissions
+         }
+         if permission_code not in user_permissions:
+             logger.warning(
+@@ -100,16 +97,12 @@
+             )
+ 
+         user_permissions = {
+-            permission.code
+-            for permission in current_user.role.permissions
++            permission.code for permission in current_user.role.permissions
+         }
+         if not user_permissions.intersection(permission_codes):
+             raise HTTPException(
+                 status_code=403,
+-                detail=(
+-                    "Insufficient permissions: "
+-                    + ", ".join(permission_codes)
+-                ),
++                detail=("Insufficient permissions: " + ", ".join(permission_codes)),
+             )
+         return current_user
+ 
+
+--- app\services\access.py
++++ app\services\access.py
+@@ -55,9 +55,7 @@
+ def initialize_access_model(db: Session) -> None:
+     permissions = {}
+     for code, description in PERMISSIONS.items():
+-        permission = db.scalar(
+-            select(Permission).where(Permission.code == code)
+-        )
++        permission = db.scalar(select(Permission).where(Permission.code == code))
+         if permission is None:
+             permission = Permission(code=code, description=description)
+             db.add(permission)
+@@ -65,9 +63,7 @@
+         permissions[code] = permission
+ 
+     for role_name, role_data in ROLE_MODEL.items():
+-        role = db.scalar(
+-            select(Role).where(Role.name == role_name)
+-        )
++        role = db.scalar(select(Role).where(Role.name == role_name))
+         if role is None:
+             role = Role(
+                 name=role_name,
+@@ -75,9 +71,7 @@
+             )
+             db.add(role)
+             db.flush()
+-        role.permissions = [
+-            permissions[code] for code in role_data["permissions"]
+-        ]
++        role.permissions = [permissions[code] for code in role_data["permissions"]]
+ 
+     db.commit()
+ 
+@@ -87,9 +81,7 @@
+     if viewer is None:
+         return
+ 
+-    users = db.scalars(
+-        select(User).where(User.role_id.is_(None))
+-    ).all()
++    users = db.scalars(select(User).where(User.role_id.is_(None))).all()
+     for user in users:
+         user.role_id = viewer.id
+     db.commit()
+@@ -131,9 +123,7 @@
+     permissions = []
+     if user.role is not None:
+         role_name = user.role.name
+-        permissions = sorted(
+-            permission.code for permission in user.role.permissions
+-        )
++        permissions = sorted(permission.code for permission in user.role.permissions)
+ 
+     return {
+         "user_id": user.id,
+
+--- app\services\auth.py
++++ app\services\auth.py
+@@ -21,9 +21,7 @@
+     if existing_user is not None:
+         return None
+ 
+-    default_role = db.scalar(
+-        select(Role).where(Role.name == "viewer")
+-    )
++    default_role = db.scalar(select(Role).where(Role.name == "viewer"))
+ 
+     user = User(
+         username=user_data.username,
+@@ -99,8 +97,6 @@
+ 
+ 
+ def logout_all_sessions(db: Session, user_id: int) -> int:
+-    result = db.execute(
+-        delete(AuthSession).where(AuthSession.user_id == user_id)
+-    )
++    result = db.execute(delete(AuthSession).where(AuthSession.user_id == user_id))
+     db.commit()
+     return result.rowcount or 0
+
+--- app\services\services.py
++++ app\services\services.py
+@@ -29,11 +29,7 @@
+ 
+ 
+ def get_services_by_status(db: Session, status: str):
+-    statement = (
+-        select(Service)
+-        .where(Service.status == status)
+-        .order_by(Service.id)
+-    )
++    statement = select(Service).where(Service.status == status).order_by(Service.id)
+     return db.scalars(statement).all()
+ 
+ 
+
+--- scripts\check_compose_config.py
++++ scripts\check_compose_config.py
+@@ -75,8 +75,10 @@
+         "postgres_data подключён к db",
+     )
+     check(
+-        any("docker-entrypoint-initdb.d" in item and item.endswith(":ro")
+-            for item in db_volumes),
++        any(
++            "docker-entrypoint-initdb.d" in item and item.endswith(":ro")
++            for item in db_volumes
++        ),
+         "init SQL смонтирован только для чтения",
+     )
+ 
+@@ -99,8 +101,7 @@
+         "app ждёт успешного завершения migrate",
+     )
+     check(
+-        app_depends.get("notification", {}).get("condition")
+-        == "service_started",
++        app_depends.get("notification", {}).get("condition") == "service_started",
+         "app ждёт запуска notification",
+     )
+ 
+@@ -186,7 +187,8 @@
+         item.get("target") for item in app.get("secrets", []) if isinstance(item, dict)
+     }
+     check(
+-        app_secret_targets == {
++        app_secret_targets
++        == {
+             "/app/secrets/lab_db_password",
+             "/app/secrets/auth_secret",
+         },
+
+--- scripts\check_docker_assets.py
++++ scripts\check_docker_assets.py
+@@ -116,9 +116,7 @@
+         base = from_lines[0]
+         print(f"\nБазовый образ: {base}")
+         if f"python:{EXPECTED_PYTHON}-slim" not in base:
+-            failures.append(
+-                f"базовый образ не соответствует Python {EXPECTED_PYTHON}"
+-            )
++            failures.append(f"базовый образ не соответствует Python {EXPECTED_PYTHON}")
+ 
+     for keyword in ["WORKDIR", "USER", "EXPOSE", "CMD", "LABEL"]:
+         if keyword not in keywords:
+@@ -134,18 +132,27 @@
+         failures.append("pip install выполняется с кэшем")
+ 
+     copy_requirements = next(
+-        (i for i, (_, k, rest) in enumerate(instructions)
+-         if k == "COPY" and "requirements.txt" in rest),
++        (
++            i
++            for i, (_, k, rest) in enumerate(instructions)
++            if k == "COPY" and "requirements.txt" in rest
++        ),
+         -1,
+     )
+     copy_app = next(
+-        (i for i, (_, k, rest) in enumerate(instructions)
+-         if k == "COPY" and " app " in f" {rest} "),
++        (
++            i
++            for i, (_, k, rest) in enumerate(instructions)
++            if k == "COPY" and " app " in f" {rest} "
++        ),
+         -1,
+     )
+     run_pip = next(
+-        (i for i, (_, k, rest) in enumerate(instructions)
+-         if k == "RUN" and "pip install" in rest),
++        (
++            i
++            for i, (_, k, rest) in enumerate(instructions)
++            if k == "RUN" and "pip install" in rest
++        ),
+         -1,
+     )
+     if -1 in (copy_requirements, run_pip, copy_app):
+
+--- scripts\check_password_storage.py
++++ scripts\check_password_storage.py
+@@ -14,11 +14,7 @@
+     try:
+         users = db.scalars(select(User).order_by(User.id)).all()
+         for user in users:
+-            status = (
+-                "HASHED"
+-                if user.password_hash.startswith("$argon2")
+-                else "LEGACY"
+-            )
++            status = "HASHED" if user.password_hash.startswith("$argon2") else "LEGACY"
+             print(f"{user.username}: {status}")
+     finally:
+         db.close()
+
+--- scripts\check_secret_config.py
++++ scripts\check_secret_config.py
+@@ -7,11 +7,7 @@
+ 
+ 
+ def configured(value) -> str:
+-    return (
+-        "CONFIGURED"
+-        if value.get_secret_value()
+-        else "EMPTY"
+-    )
++    return "CONFIGURED" if value.get_secret_value() else "EMPTY"
+ 
+ 
+ def main() -> None:
+
+19 files would be reformatted, 27 files already formatted

@@ -1,0 +1,37 @@
+Welcome to the profile statistics browser.
+profile_after.prof% profile_after.prof% Wed Nov 11 01:00:17 2026    profile_after.prof
+
+         247086 function calls (246407 primitive calls) in 0.325 seconds
+
+   Ordered by: cumulative time
+   List reduced from 469 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     27/1    0.001    0.000    0.325    0.325 {built-in method builtins.exec}
+        1    0.003    0.003    0.325    0.325 scripts/profile_service_report.py:1(<module>)
+        1    0.007    0.007    0.214    0.214 scripts/profile_service_report.py:58(main)
+     41/7    0.000    0.000    0.131    0.019 <frozen importlib._bootstrap>:1349(_find_and_load)
+     41/7    0.000    0.000    0.130    0.019 <frozen importlib._bootstrap>:1304(_find_and_load_unlocked)
+        5    0.084    0.017    0.123    0.025 C:\Nurbol\работа\cloud-application\labs\lab-34\app\services\reporting.py:1(build_service_report)
+     37/9    0.000    0.000    0.115    0.013 <frozen importlib._bootstrap>:911(_load_unlocked)
+     25/9    0.000    0.000    0.114    0.013 <frozen importlib._bootstrap_external>:1017(exec_module)
+    85/15    0.000    0.000    0.100    0.007 <frozen importlib._bootstrap>:480(_call_with_frames_removed)
+       41    0.000    0.000    0.048    0.001 <frozen importlib._bootstrap>:1240(_find_spec)
+       33    0.000    0.000    0.046    0.001 <frozen importlib._bootstrap_external>:1548(find_spec)
+       33    0.001    0.000    0.046    0.001 <frozen importlib._bootstrap_external>:1519(_get_spec)
+      122    0.002    0.000    0.044    0.000 <frozen importlib._bootstrap_external>:1621(find_spec)
+       25    0.001    0.000    0.041    0.002 <frozen importlib._bootstrap_external>:1090(get_code)
+      194    0.000    0.000    0.039    0.000 <frozen importlib._bootstrap_external>:145(_path_stat)
+      194    0.039    0.000    0.039    0.000 {built-in method nt.stat}
+        1    0.002    0.002    0.033    0.033 scripts/profile_service_report.py:49(result_digest)
+        1    0.000    0.000    0.029    0.029 C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\Lib\json\__init__.py:185(dumps)
+        1    0.000    0.000    0.029    0.029 C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\Lib\json\encoder.py:185(encode)
+        1    0.029    0.029    0.029    0.029 C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\Lib\json\encoder.py:207(iterencode)
+        1    0.000    0.000    0.027    0.027 C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\Lib\statistics.py:1(<module>)
+       47    0.000    0.000    0.027    0.001 <frozen importlib._bootstrap_external>:1211(get_data)
+        1    0.000    0.000    0.026    0.026 C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\Lib\pathlib\__init__.py:1(<module>)
+        1    0.000    0.000    0.026    0.026 C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\Lib\argparse.py:1793(__init__)
+        1    0.022    0.022    0.024    0.024 scripts/profile_service_report.py:18(create_dataset)
+
+
+profile_after.prof% Goodbye.

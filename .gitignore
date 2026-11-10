@@ -27,3 +27,6 @@ certs/*.pem
 # OS
 .DS_Store
 Thumbs.db
+
+# Profiling artifacts
+*.prof

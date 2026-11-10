@@ -1,0 +1,9 @@
+F821 Undefined name `undefined_status`
+ --> scripts\static_analysis_sample.py:9:7
+  |
+7 | print(build_message("notification"))
+8 |
+9 | print(undefined_status)
+  |       ^^^^^^^^^^^^^^^^
+
+Found 1 error.

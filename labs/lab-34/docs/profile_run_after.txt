@@ -1,0 +1,10 @@
+services=20000 types=200 repeats=5
+run=1 time=0.027485s
+run=2 time=0.020630s
+run=3 time=0.029414s
+run=4 time=0.025562s
+run=5 time=0.019658s
+records: 20000
+digest: 8a677ba39ba6a865d59d3ce75d3ecb61a7d28ef09460c31dbc200f1b71b9de1e
+mean: 0.024550s
+best: 0.019658s

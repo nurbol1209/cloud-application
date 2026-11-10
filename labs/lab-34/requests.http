@@ -1,0 +1,183 @@
+@host = https://localhost:8443
+
+### Информация о соединении (дополнительное задание)
+GET {{host}}/connection
+
+### Состояние приложения через HTTPS
+GET {{host}}/status
+@viewer_token = TOKEN_VIEWER
+@operator_token = TOKEN_OPERATOR
+@admin_token = TOKEN_ADMIN
+
+### Вход viewer
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "student01",
+  "password": "cloud12345"
+}
+
+### Вход operator
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "student02",
+  "password": "cloud12345"
+}
+
+### Вход administrator
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "student03",
+  "password": "cloud12345"
+}
+
+### Текущий пользователь
+GET {{host}}/auth/me
+Authorization: Bearer {{viewer_token}}
+
+### Без токена — 401
+GET {{host}}/services
+
+### Неправильный токен — 401
+GET {{host}}/services
+Authorization: Bearer incorrect-token
+
+### viewer читает сервисы — 200
+GET {{host}}/services
+Authorization: Bearer {{viewer_token}}
+
+### viewer создаёт сервис — 403
+POST {{host}}/services
+Authorization: Bearer {{viewer_token}}
+Content-Type: application/json
+
+{
+  "name": "Viewer Service",
+  "type": "application",
+  "status": "running"
+}
+
+### operator создаёт сервис — 201
+POST {{host}}/services
+Authorization: Bearer {{operator_token}}
+Content-Type: application/json
+
+{
+  "name": "Operator Service",
+  "type": "application",
+  "status": "running"
+}
+
+### operator и административный API — 403
+GET {{host}}/access/roles
+Authorization: Bearer {{operator_token}}
+
+### administrator читает роли — 200
+GET {{host}}/access/roles
+Authorization: Bearer {{admin_token}}
+
+### administrator читает доступ пользователя — 200
+GET {{host}}/access/users/1
+Authorization: Bearer {{admin_token}}
+
+### administrator меняет роль — 200
+PUT {{host}}/access/users/1/role
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "role_name": "operator"
+}
+
+### Дополнительное задание: сводка (users.manage или roles.manage)
+GET {{host}}/access/summary
+Authorization: Bearer {{admin_token}}
+
+### Самостоятельное задание: два пользователя с одинаковым паролем
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "security_test01",
+  "password": "TestPassword123"
+}
+
+###
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "security_test02",
+  "password": "TestPassword123"
+}
+
+### Вход security_test01
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "security_test01",
+  "password": "TestPassword123"
+}
+
+### Завершение сеанса
+DELETE {{host}}/auth/session/{{viewer_token}}
+
+### ЛР №29: состояние внутреннего сервиса уведомлений (локальный запуск)
+GET http://127.0.0.1:9000/status
+
+### ЛР №29: прямое создание уведомления в Notification Service
+POST http://127.0.0.1:9000/notifications
+Content-Type: application/json
+
+{
+  "recipient": "compose@cloud.local",
+  "message": "Direct service call"
+}
+
+### ЛР №29: список принятых уведомлений
+GET http://127.0.0.1:9000/notifications
+
+### ЛР №29: уведомление по идентификатору (дополнительное задание)
+GET http://127.0.0.1:9000/notifications/1
+
+### ЛР №29: передача уведомления через Cloud Application
+POST {{host}}/integration/notifications
+Authorization: Bearer {{operator_token}}
+Content-Type: application/json
+
+{
+  "recipient": "operator@cloud.local",
+  "message": "Notification from Cloud Application"
+}
+
+### ЛР №29: viewer не имеет services.write
+POST {{host}}/integration/notifications
+Authorization: Bearer {{viewer_token}}
+Content-Type: application/json
+
+{
+  "recipient": "viewer@cloud.local",
+  "message": "Should be denied"
+}
+
+### ЛР №30: тестовая ошибка зависимого сервиса (503)
+GET http://127.0.0.1:9000/test/error/503
+
+### ЛР №30: тестовая ошибка зависимого сервиса (400)
+GET http://127.0.0.1:9000/test/error/400
+
+### ЛР №30: успешный сценарий после включения обработки ошибок
+POST {{host}}/integration/notifications
+Authorization: Bearer {{operator_token}}
+Content-Type: application/json
+
+{
+  "recipient": "stable@cloud.local",
+  "message": "Network error handling enabled"
+}
