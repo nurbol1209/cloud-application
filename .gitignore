@@ -21,7 +21,6 @@ secrets/*
 certs/*.pem
 
 # Editors
-.vscode/
 .idea/
 
 # OS

@@ -1,0 +1,115 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Cloud Application (выбранная ЛР)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "app.main:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8000"
+      ],
+      "cwd": "${workspaceFolder}/${input:labDir}",
+      "env": {
+        "DB_BACKEND": "sqlite",
+        "LOG_LEVEL": "INFO",
+        "NO_PROXY": "",
+        "no_proxy": ""
+      },
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Notification Service (выбранная ЛР)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "app.notification_service.main:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "9000"
+      ],
+      "cwd": "${workspaceFolder}/${input:labDir}",
+      "env": {
+        "LOG_LEVEL": "INFO",
+        "NO_PROXY": "",
+        "no_proxy": ""
+      },
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Текущий файл Python",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "cwd": "${fileDirname}",
+      "env": {
+        "DB_BACKEND": "sqlite",
+        "NO_PROXY": "",
+        "no_proxy": ""
+      },
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Профиль отчёта сервисов (ЛР 34)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/labs/lab-34/scripts/profile_service_report.py",
+      "cwd": "${workspaceFolder}/labs/lab-34",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ],
+  "inputs": [
+    {
+      "id": "labDir",
+      "type": "pickString",
+      "description": "Каталог лабораторной работы",
+      "default": "labs/lab-34",
+      "options": [
+        "labs/lab-01",
+        "labs/lab-02",
+        "labs/lab-03",
+        "labs/lab-04",
+        "labs/lab-05",
+        "labs/lab-06",
+        "labs/lab-07",
+        "labs/lab-08",
+        "labs/lab-09",
+        "labs/lab-10",
+        "labs/lab-11",
+        "labs/lab-12",
+        "labs/lab-13",
+        "labs/lab-14",
+        "labs/lab-15",
+        "labs/lab-16",
+        "labs/lab-17",
+        "labs/lab-18",
+        "labs/lab-19",
+        "labs/lab-20",
+        "labs/lab-21",
+        "labs/lab-22",
+        "labs/lab-23",
+        "labs/lab-24",
+        "labs/lab-25",
+        "labs/lab-26",
+        "labs/lab-27",
+        "labs/lab-28",
+        "labs/lab-29",
+        "labs/lab-30",
+        "labs/lab-31",
+        "labs/lab-32",
+        "labs/lab-33",
+        "labs/lab-34"
+      ]
+    }
+  ]
+}

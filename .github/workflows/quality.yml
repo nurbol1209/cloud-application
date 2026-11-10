@@ -1,0 +1,46 @@
+name: Quality gate
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lab-34:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: labs/lab-34
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install development tools
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Ruff lint
+        run: python -m ruff check app scripts
+
+      - name: Ruff format check
+        run: python -m ruff format --check app scripts
+
+      - name: Compile
+        run: python -m compileall -q app scripts
+
+      - name: Prepare local secrets
+        run: python scripts/init_secrets.py
+
+      - name: Compose configuration
+        run: python scripts/check_compose_config.py
+
+      - name: Deterministic report digest
+        run: |
+          first=$(python scripts/profile_service_report.py --services 5000 --types 100 --repeats 1 | grep '^digest:')
+          second=$(python scripts/profile_service_report.py --services 5000 --types 100 --repeats 1 | grep '^digest:')
+          echo "$first"
+          test "$first" = "$second"

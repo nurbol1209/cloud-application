@@ -1,0 +1,107 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Quality gate",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/${input:labDir}/scripts/check_quality.ps1"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/${input:labDir}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Compile all",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": [
+        "-m",
+        "compileall",
+        "-q",
+        "app",
+        "scripts"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/${input:labDir}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Init secrets",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": [
+        "scripts/init_secrets.py"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/${input:labDir}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Init database",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": [
+        "scripts/init_db.py"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/${input:labDir}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Init access model",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": [
+        "scripts/init_access.py"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/${input:labDir}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Prepare local DB",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Init secrets",
+        "Init database",
+        "Init access model"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Profile service report (ЛР 34)",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": [
+        "scripts/profile_service_report.py"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/labs/lab-34"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Benchmark scaling (ЛР 34)",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "args": [
+        "scripts/benchmark_scaling.py"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/labs/lab-34"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
