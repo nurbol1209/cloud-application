@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.venv-check/
+*.egg-info/
+
+# Quality tools
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+
+# Local data
+*.db
+storage/
+
+# Local configuration and secrets
+.env
+secrets/*
+!secrets/README.md
+certs/*.pem
+
+# Editors
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

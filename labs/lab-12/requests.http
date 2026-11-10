@@ -1,0 +1,42 @@
+@host = http://127.0.0.1:8000
+
+### Список сервисов
+GET {{host}}/services
+
+### Один сервис
+GET {{host}}/services/1
+
+### Несуществующий сервис
+GET {{host}}/services/100
+
+### Создание сервиса
+POST {{host}}/services
+Content-Type: application/json
+
+{
+  "name": "Monitoring Service",
+  "type": "monitoring",
+  "status": "running"
+}
+
+### Изменение сервиса
+PUT {{host}}/services/1
+Content-Type: application/json
+
+{
+  "name": "Web Service",
+  "type": "application",
+  "status": "maintenance"
+}
+
+### Удаление сервиса
+DELETE {{host}}/services/2
+
+### Неполный JSON — ошибка валидации 422
+POST {{host}}/services
+Content-Type: application/json
+
+{
+  "name": "Test Service",
+  "type": "test"
+}

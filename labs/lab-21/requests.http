@@ -1,0 +1,96 @@
+@host = http://127.0.0.1:8000
+@viewer_token = TOKEN_VIEWER
+@operator_token = TOKEN_OPERATOR
+@admin_token = TOKEN_ADMIN
+
+### Вход viewer
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "student01",
+  "password": "cloud12345"
+}
+
+### Вход operator
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "student02",
+  "password": "cloud12345"
+}
+
+### Вход administrator
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "student03",
+  "password": "cloud12345"
+}
+
+### Текущий пользователь
+GET {{host}}/auth/me
+Authorization: Bearer {{viewer_token}}
+
+### Без токена — 401
+GET {{host}}/services
+
+### Неправильный токен — 401
+GET {{host}}/services
+Authorization: Bearer incorrect-token
+
+### viewer читает сервисы — 200
+GET {{host}}/services
+Authorization: Bearer {{viewer_token}}
+
+### viewer создаёт сервис — 403
+POST {{host}}/services
+Authorization: Bearer {{viewer_token}}
+Content-Type: application/json
+
+{
+  "name": "Viewer Service",
+  "type": "application",
+  "status": "running"
+}
+
+### operator создаёт сервис — 201
+POST {{host}}/services
+Authorization: Bearer {{operator_token}}
+Content-Type: application/json
+
+{
+  "name": "Operator Service",
+  "type": "application",
+  "status": "running"
+}
+
+### operator и административный API — 403
+GET {{host}}/access/roles
+Authorization: Bearer {{operator_token}}
+
+### administrator читает роли — 200
+GET {{host}}/access/roles
+Authorization: Bearer {{admin_token}}
+
+### administrator читает доступ пользователя — 200
+GET {{host}}/access/users/1
+Authorization: Bearer {{admin_token}}
+
+### administrator меняет роль — 200
+PUT {{host}}/access/users/1/role
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "role_name": "operator"
+}
+
+### Дополнительное задание: сводка (users.manage или roles.manage)
+GET {{host}}/access/summary
+Authorization: Bearer {{admin_token}}
+
+### Завершение сеанса
+DELETE {{host}}/auth/session/{{viewer_token}}

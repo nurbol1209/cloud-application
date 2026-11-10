@@ -1,0 +1,91 @@
+== Dockerfile ==
+  1  FROM     python:3.13-slim
+  6  ENV      PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PIP_DI
+  8  WORKDIR  /app
+ 12  COPY     requirements.txt ./
+ 13  RUN      python -m pip install --no-cache-dir -r requirements.txt
+ 17  RUN      useradd --create-home --shell /usr/sbin/nologin appuser && mkdir -p /a
+ 19  COPY     --chown=appuser:appuser app ./app
+ 20  COPY     --chown=appuser:appuser migrations ./migrations
+ 21  COPY     --chown=appuser:appuser alembic.ini ./
+ 22  COPY     --chown=appuser:appuser run.py ./
+ 24  USER     appuser
+ 26  EXPOSE   8000
+ 30  LABEL    org.opencontainers.image.title="Cloud Application" org.opencontainers.
+ 32  CMD      ["python", "run.py"]
+
+Базовый образ: python:3.13-slim
+Порядок слоёв: requirements -> pip install -> app (кэш сохраняется)
+
+== Build context ==
+Файлов в контексте: 47, суммарно 69.1 KiB
+  alembic.ini
+  app/__init__.py
+  app/config.py
+  app/data/__init__.py
+  app/data/database.py
+  app/data/models.py
+  app/main.py
+  app/routers/__init__.py
+  app/routers/access.py
+  app/routers/auth.py
+  app/routers/objects.py
+  app/routers/services.py
+  app/routers/system.py
+  app/schemas/__init__.py
+  app/schemas/access.py
+  app/schemas/auth.py
+  app/schemas/objects.py
+  app/schemas/services.py
+  app/security/__init__.py
+  app/security/authorization.py
+  app/security/passwords.py
+  app/services/__init__.py
+  app/services/access.py
+  app/services/auth.py
+  app/services/objects.py
+  app/services/services.py
+  migrations/env.py
+  migrations/script.py.mako
+  migrations/versions/0001_baseline_existing_schema.py
+  migrations/versions/0002_add_service_description.py
+  migrations/versions/0003_add_service_endpoint_url.py
+  migrations/versions/0004_add_data_integrity_constraints.py
+  migrations/versions/0005_add_service_type_name_check.py
+  migrations/versions/0006_add_stored_objects.py
+  migrations/versions/0007_add_users_and_auth_sessions.py
+  migrations/versions/0008_add_role_access_model.py
+  migrations/versions/0009_rename_password_to_password_hash.py
+  requirements.txt
+  run.py
+  scripts/check_docker_assets.py
+  scripts/check_password_storage.py
+  scripts/check_secret_config.py
+  scripts/hash_existing_passwords.py
+  scripts/init_access.py
+  scripts/init_db.py
+  scripts/init_secrets.py
+  scripts/schema_baseline.sql
+[OK] обязательный файл: app/main.py
+[OK] обязательный файл: migrations/env.py
+[OK] обязательный файл: alembic.ini
+[OK] обязательный файл: run.py
+[OK] обязательный файл: requirements.txt
+[OK] исключён: .env
+[OK] исключён: .env.example
+[OK] исключён: secrets/lab_db_password
+[OK] исключён: secrets/auth_secret
+[OK] исключён: certs/localhost-key.pem
+[OK] исключён: certs/localhost.pem
+[OK] исключён: storage/objects/example.bin
+[OK] исключён: docs/dependencies.md
+[OK] исключён: cloud_application.db
+[OK] исключён: pylock.toml
+[OK] исключён: requests.http
+[OK] исключён: .git/config
+[OK] исключён: .venv-check/pyvenv.cfg
+[OK] исключён: .venv/pyvenv.cfg
+[OK] исключён: app/__pycache__/main.cpython-313.pyc
+
+== Итог ==
+PASS: Dockerfile и .dockerignore согласованы, секреты вне контекста

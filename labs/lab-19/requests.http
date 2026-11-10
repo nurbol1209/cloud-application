@@ -1,0 +1,68 @@
+@host = http://127.0.0.1:8000
+@token = TOKEN_ИЗ_ОТВЕТА_LOGIN
+
+### Регистрация пользователя
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "student01",
+  "password": "cloud12345"
+}
+
+### Повторная регистрация — 409
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "student01",
+  "password": "another123"
+}
+
+### Нормализация имени: сохранится student02
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "   Student02   ",
+  "password": "cloud12345"
+}
+
+### Вход — 200 и токен
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "student01",
+  "password": "cloud12345"
+}
+
+### Проверка сеанса
+GET {{host}}/auth/session/{{token}}
+
+### Неправильный пароль — 401
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "student01",
+  "password": "wrongpassword"
+}
+
+### Несуществующий пользователь — 401
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "unknown",
+  "password": "cloud12345"
+}
+
+### Неверный токен — 401
+GET {{host}}/auth/session/incorrect-token
+
+### Завершение сеанса
+DELETE {{host}}/auth/session/{{token}}
+
+### Дополнительное задание: завершить все сеансы пользователя
+DELETE {{host}}/auth/user/1/sessions

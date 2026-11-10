@@ -1,0 +1,49 @@
+== Сервисы ==
+[OK] сервисы app, db, migrate
+[OK] db использует postgres:18
+[OK] POSTGRES_DB
+[OK] POSTGRES_USER
+[OK] пароль БД читается из файла секрета
+[OK] пароль не задан открыто
+[OK] PostgreSQL не опубликован на host port
+[OK] postgres_data подключён к db
+[OK] init SQL смонтирован только для чтения
+[OK] healthcheck использует pg_isready
+
+== Порядок запуска ==
+[OK] migrate ждёт healthy db
+[OK] app ждёт успешного завершения migrate
+
+== Конфигурация приложения ==
+[OK] app: DB_HOST=db
+[OK] app: DB_BACKEND=postgresql
+[OK] migrate: DB_HOST=db
+[OK] migrate: DB_BACKEND=postgresql
+[OK] app публикуется как 127.0.0.1:8080:8000
+
+== Сеть, volume, secrets ==
+[OK] volume postgres_data
+[OK] сеть cloud-network
+[OK] db подключён к cloud-network
+[OK] app подключён к cloud-network
+[OK] migrate подключён к cloud-network
+[OK] секреты lab_db_password и auth_secret определены
+[OK] lab_db_password: файл в secrets/
+[OK] auth_secret: файл в secrets/
+[OK] app получает оба секрета в /app/secrets
+
+== Файлы секретов ==
+[OK] lab_db_password существует локально
+[OK] значение lab_db_password не попало в строки с паролем
+[OK] auth_secret существует локально
+[OK] значение auth_secret не попало в строки с паролем
+
+== Init SQL ==
+[OK] 01_base_schema.sql существует
+[OK] init SQL содержит CREATE TABLE service_types
+[OK] init SQL содержит CREATE TABLE services
+[OK] init SQL содержит INSERT INTO service_types
+[OK] init SQL содержит INSERT INTO services
+
+== Итог ==
+PASS: compose.yaml соответствует требованиям лабораторной работы

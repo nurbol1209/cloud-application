@@ -1,0 +1,43 @@
+@host = http://127.0.0.1:8000
+
+### Матрица ролей и разрешений
+GET {{host}}/access/roles
+
+### Роль пользователя
+GET {{host}}/access/users/1
+
+### Назначить роль operator
+PUT {{host}}/access/users/1/role
+Content-Type: application/json
+
+{
+  "role_name": "operator"
+}
+
+### Назначить роль administrator
+PUT {{host}}/access/users/1/role
+Content-Type: application/json
+
+{
+  "role_name": "administrator"
+}
+
+### Несуществующая роль — 404
+PUT {{host}}/access/users/1/role
+Content-Type: application/json
+
+{
+  "role_name": "superuser"
+}
+
+### Регистрация нового пользователя (получит viewer)
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "student04",
+  "password": "cloud12345"
+}
+
+### Проверка роли нового пользователя
+GET {{host}}/access/users/4

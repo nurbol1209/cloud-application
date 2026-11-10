@@ -1,0 +1,13 @@
+.venv/
+.venv-check/
+__pycache__/
+*.pyc
+.env
+.vscode/
+*.db
+storage/
+certs/*.pem
+secrets/*
+!secrets/README.md
+.ruff_cache/
+.mypy_cache/

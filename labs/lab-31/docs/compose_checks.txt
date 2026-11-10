@@ -1,0 +1,65 @@
+== Сервисы ==
+[OK] сервисы app, db, migrate, notification
+[OK] db использует postgres:18
+[OK] app использует cloud-application:0.4
+[OK] migrate использует cloud-application:0.4
+[OK] POSTGRES_DB
+[OK] POSTGRES_USER
+[OK] пароль БД читается из файла секрета
+[OK] пароль не задан открыто
+[OK] PostgreSQL не опубликован на host port
+[OK] postgres_data подключён к db
+[OK] init SQL смонтирован только для чтения
+[OK] healthcheck использует pg_isready
+
+== Порядок запуска ==
+[OK] migrate ждёт healthy db
+[OK] app ждёт успешного завершения migrate
+[OK] app ждёт запуска notification
+
+== Конфигурация приложения ==
+[OK] app: DB_HOST=db
+[OK] app: DB_BACKEND=postgresql
+[OK] migrate: DB_HOST=db
+[OK] migrate: DB_BACKEND=postgresql
+[OK] app публикуется как 127.0.0.1:8080:8000
+[OK] app адресует сервис по имени notification
+[OK] app: NOTIFICATION_TIMEOUT_SECONDS=2.0
+[OK] app: NOTIFICATION_MAX_ATTEMPTS=3
+[OK] app: NOTIFICATION_RETRY_DELAY_SECONDS=0.5
+[OK] app: LOG_LEVEL=INFO
+
+== Notification Service ==
+[OK] notification использует тот же образ cloud-application:0.4
+[OK] notification запускает собственное FastAPI-приложение
+[OK] notification слушает порт 9000
+[OK] notification не публикует host port
+[OK] notification: LOG_LEVEL=INFO
+
+== Сеть, volume, secrets ==
+[OK] volume postgres_data
+[OK] сеть cloud-network
+[OK] db подключён к cloud-network
+[OK] app подключён к cloud-network
+[OK] migrate подключён к cloud-network
+[OK] notification подключён к cloud-network
+[OK] секреты lab_db_password и auth_secret определены
+[OK] lab_db_password: файл в secrets/
+[OK] auth_secret: файл в secrets/
+[OK] app получает оба секрета в /app/secrets
+
+== Файлы секретов ==
+[WARN] lab_db_password существует локально
+[WARN] auth_secret существует локально
+
+== Init SQL ==
+[OK] 01_base_schema.sql существует
+[OK] init SQL содержит CREATE TABLE service_types
+[OK] init SQL содержит CREATE TABLE services
+[OK] init SQL содержит INSERT INTO service_types
+[OK] init SQL содержит INSERT INTO services
+
+== Итог ==
+WARN: lab_db_password существует локально
+WARN: auth_secret существует локально
+PASS: compose.yaml соответствует требованиям лабораторной работы
