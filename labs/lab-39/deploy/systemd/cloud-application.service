@@ -1,0 +1,27 @@
+[Unit]
+Description=Cloud Application FastAPI Service
+After=network.target
+
+[Service]
+Type=simple
+User=cloudapp
+Group=cloudapp
+
+WorkingDirectory=/opt/cloud-application/app
+
+EnvironmentFile=/etc/cloud-application/cloud-application.env
+
+ExecStart=/opt/cloud-application/venv/bin/python /opt/cloud-application/app/run.py
+
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+
+UMask=0027
+NoNewPrivileges=true
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

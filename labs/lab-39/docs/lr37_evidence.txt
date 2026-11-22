@@ -1,0 +1,615 @@
+
+
+========== 1. Среда Docker и версия приложения ==========
+
+$ hostname
+DESKTOP-3FUHFLF
+[exit=0]
+
+$ dk version
+Client:
+ Version:           29.9.3
+ API version:       1.56
+ Go version:        go1.26.10
+ Git commit:        5457199
+ Built:             Tue Nov  3 21:46:10 2026
+ OS/Arch:           windows/amd64
+ Context:           desktop-linux
+
+Server: Docker Desktop 4.99.0 (245822)
+ Engine:
+  Version:          29.9.3
+  API version:      1.56 (minimum version 1.40)
+  Go version:       go1.26.10
+  Git commit:       70efc0e
+  Built:            Tue Nov  3 21:41:42 2026
+  OS/Arch:          linux/amd64
+  Experimental:     false
+ containerd:
+  Version:          v2.4.2
+  GitCommit:        b7a25261e029d68978bbf290df0a62fc819b3c51
+ runc:
+  Version:          1.5.2
+  GitCommit:        v1.5.2-0-g29dd3dc2
+ docker-init:
+  Version:          0.19.0
+  GitCommit:        de40ad0
+[exit=0]
+
+$ dk info --format server={{.ServerVersion}} os={{.OSType}} cpus={{.NCPU}} mem={{.MemTotal}}
+server=29.9.3 os=linux cpus=12 mem=8192270336
+[exit=0]
+
+$ git -C C:/Nurbol/работа/cloud-application status --short
+?? labs/lab-37/
+[exit=0]
+
+Git commit развертываемой версии: fb7e384b2fbcdd6bdc11f4730dba26a8f9399981
+
+$ git -C C:/Nurbol/работа/cloud-application log -1 --oneline
+fb7e384 lab-36: deploy Cloud Application as systemd service
+[exit=0]
+
+$ sed -n 1,120p C:/Nurbol/работа/cloud-application/labs/lab-37/Dockerfile
+FROM python:3.13-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+
+# Зависимости копируются и устанавливаются отдельным слоем:
+# изменения исходного кода не инвалидируют этот слой.
+COPY requirements.txt ./
+RUN python -m pip install --no-cache-dir -r requirements.txt
+
+RUN useradd --create-home --shell /usr/sbin/nologin appuser \
+    && mkdir -p /app/storage/objects \
+    && chown -R appuser:appuser /app/storage
+
+COPY --chown=appuser:appuser app ./app
+COPY --chown=appuser:appuser migrations ./migrations
+COPY --chown=appuser:appuser alembic.ini ./
+COPY --chown=appuser:appuser run.py ./
+
+USER appuser
+
+EXPOSE 8000
+
+LABEL org.opencontainers.image.title="Cloud Application" \
+      org.opencontainers.image.version="0.7" \
+      org.opencontainers.image.description="Cloud Application REST API on FastAPI"
+
+CMD ["python", "run.py"]
+[exit=0]
+
+
+========== 2. Сборка контейнерного образа ==========
+
+$ dk build --label org.opencontainers.image.revision=fb7e384b2fbcdd6bdc11f4730dba26a8f9399981 -t cloud-application:0.7 C:/Nurbol/работа/cloud-application/labs/lab-37
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.06kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/python:3.13-slim
+#2 ...
+
+#3 [auth] library/python:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.13-slim
+#2 DONE 3.1s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 309B done
+#4 DONE 0.1s
+
+#5 [internal] load build context
+#5 transferring context: 78.84kB 0.0s done
+#5 DONE 0.1s
+
+#6 [1/9] FROM docker.io/library/python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90
+#6 resolve docker.io/library/python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90 0.0s done
+#6 DONE 0.2s
+
+#6 [1/9] FROM docker.io/library/python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90
+#6 extracting sha256:37fb86c2a767b88d500c6872195f88078f64765fe0d2f9cc375cc2efbd4c0a41
+#6 sha256:f7a79299dedd5c817d47e3f61cf6eecae73b92cb193a1ef52180a46b0161c50a 0B / 248B 0.2s
+#6 sha256:f7a79299dedd5c817d47e3f61cf6eecae73b92cb193a1ef52180a46b0161c50a 248B / 248B 0.3s done
+#6 sha256:faa890a31e98e11bc3138d9549c86441024fdb24bd555bb0bca17dc9a6c5b565 0B / 11.92MB 0.2s
+#6 sha256:0069ea31add00b9f63dbb3f0bcee44990654c5e2c17ccfeaeae47e74edf44498 0B / 1.29MB 0.2s
+#6 extracting sha256:37fb86c2a767b88d500c6872195f88078f64765fe0d2f9cc375cc2efbd4c0a41 0.7s done
+#6 sha256:faa890a31e98e11bc3138d9549c86441024fdb24bd555bb0bca17dc9a6c5b565 1.05MB / 11.92MB 0.9s
+#6 sha256:faa890a31e98e11bc3138d9549c86441024fdb24bd555bb0bca17dc9a6c5b565 2.10MB / 11.92MB 1.4s
+#6 sha256:faa890a31e98e11bc3138d9549c86441024fdb24bd555bb0bca17dc9a6c5b565 3.15MB / 11.92MB 1.5s
+#6 sha256:faa890a31e98e11bc3138d9549c86441024fdb24bd555bb0bca17dc9a6c5b565 4.19MB / 11.92MB 2.0s
+#6 sha256:faa890a31e98e11bc3138d9549c86441024fdb24bd555bb0bca17dc9a6c5b565 5.24MB / 11.92MB 2.1s
+#6 sha256:faa890a31e98e11bc3138d9549c86441024fdb24bd555bb0bca17dc9a6c5b565 6.29MB / 11.92MB 2.3s
+#6 sha256:faa890a31e98e11bc3138d9549c86441024fdb24bd555bb0bca17dc9a6c5b565 7.34MB / 11.92MB 2.6s
+#6 sha256:0069ea31add00b9f63dbb3f0bcee44990654c5e2c17ccfeaeae47e74edf44498 1.05MB / 1.29MB 2.6s
+#6 sha256:faa890a31e98e11bc3138d9549c86441024fdb24bd555bb0bca17dc9a6c5b565 8.39MB / 11.92MB 3.0s
+#6 sha256:0069ea31add00b9f63dbb3f0bcee44990654c5e2c17ccfeaeae47e74edf44498 1.29MB / 1.29MB 2.9s done
+#6 extracting sha256:0069ea31add00b9f63dbb3f0bcee44990654c5e2c17ccfeaeae47e74edf44498
+#6 sha256:faa890a31e98e11bc3138d9549c86441024fdb24bd555bb0bca17dc9a6c5b565 9.44MB / 11.92MB 3.2s
+#6 extracting sha256:0069ea31add00b9f63dbb3f0bcee44990654c5e2c17ccfeaeae47e74edf44498 0.1s done
+#6 sha256:faa890a31e98e11bc3138d9549c86441024fdb24bd555bb0bca17dc9a6c5b565 10.49MB / 11.92MB 3.5s
+#6 sha256:faa890a31e98e11bc3138d9549c86441024fdb24bd555bb0bca17dc9a6c5b565 11.92MB / 11.92MB 3.6s done
+#6 extracting sha256:faa890a31e98e11bc3138d9549c86441024fdb24bd555bb0bca17dc9a6c5b565
+#6 extracting sha256:faa890a31e98e11bc3138d9549c86441024fdb24bd555bb0bca17dc9a6c5b565 0.3s done
+#6 DONE 4.1s
+
+#6 [1/9] FROM docker.io/library/python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90
+#6 extracting sha256:f7a79299dedd5c817d47e3f61cf6eecae73b92cb193a1ef52180a46b0161c50a 0.0s done
+#6 DONE 4.2s
+
+#7 [2/9] WORKDIR /app
+#7 DONE 0.3s
+
+#8 [3/9] COPY requirements.txt ./
+#8 DONE 0.1s
+
+#9 [4/9] RUN python -m pip install --no-cache-dir -r requirements.txt
+#9 1.966 Collecting alembic==1.20.1 (from -r requirements.txt (line 1))
+#9 2.247   Downloading alembic-1.20.1-py3-none-any.whl.metadata (7.3 kB)
+#9 2.335 Collecting annotated-doc==0.0.5 (from -r requirements.txt (line 2))
+#9 2.400   Downloading annotated_doc-0.0.5-py3-none-any.whl.metadata (6.5 kB)
+#9 2.483 Collecting annotated-types==0.8.0 (from -r requirements.txt (line 3))
+#9 2.551   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+#9 2.669 Collecting anyio==4.16.0 (from -r requirements.txt (line 4))
+#9 2.740   Downloading anyio-4.16.0-py3-none-any.whl.metadata (4.7 kB)
+#9 2.855 Collecting argon2-cffi==25.1.0 (from -r requirements.txt (line 5))
+#9 2.924   Downloading argon2_cffi-25.1.0-py3-none-any.whl.metadata (4.1 kB)
+#9 3.035 Collecting argon2-cffi-bindings==26.1.0 (from -r requirements.txt (line 6))
+#9 3.128   Downloading argon2_cffi_bindings-26.1.0-cp310-abi3-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl.metadata (7.5 kB)
+#9 3.237 Collecting certifi==2026.10.23 (from -r requirements.txt (line 7))
+#9 3.506   Downloading certifi-2026.10.23-py3-none-any.whl.metadata (2.5 kB)
+#9 4.822 Collecting cffi==2.1.1 (from -r requirements.txt (line 8))
+#9 5.106   Downloading cffi-2.1.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+#9 5.307 Collecting click==8.5.1 (from -r requirements.txt (line 9))
+#9 5.459   Downloading click-8.5.1-py3-none-any.whl.metadata (2.6 kB)
+#9 5.554 Collecting colorama==0.4.6 (from -r requirements.txt (line 10))
+#9 5.614   Downloading colorama-0.4.6-py2.py3-none-any.whl.metadata (17 kB)
+#9 5.866 Collecting fastapi==0.162.2 (from -r requirements.txt (line 11))
+#9 5.935   Downloading fastapi-0.162.2-py3-none-any.whl.metadata (27 kB)
+#9 6.036 Collecting h11==0.16.0 (from -r requirements.txt (line 12))
+#9 6.101   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+#9 6.189 Collecting httpcore==1.0.9 (from -r requirements.txt (line 13))
+#9 6.246   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+#9 6.408 Collecting httptools==0.9.0 (from -r requirements.txt (line 14))
+#9 6.468   Downloading httptools-0.9.0-cp313-cp313-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (3.5 kB)
+#9 6.556 Collecting httpx==0.28.1 (from -r requirements.txt (line 15))
+#9 6.618   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+#9 6.699 Collecting idna==3.20 (from -r requirements.txt (line 16))
+#9 6.758   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+#9 6.828 Collecting iniconfig==2.3.1 (from -r requirements.txt (line 17))
+#9 6.891   Downloading iniconfig-2.3.1-py3-none-any.whl.metadata (2.8 kB)
+#9 6.973 Collecting Mako==1.4.3 (from -r requirements.txt (line 18))
+#9 7.033   Downloading mako-1.4.3-py3-none-any.whl.metadata (2.9 kB)
+#9 7.240 Collecting MarkupSafe==3.0.4 (from -r requirements.txt (line 19))
+#9 7.301   Downloading markupsafe-3.0.4-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+#9 7.394 Collecting opentelemetry-api==1.45.2 (from -r requirements.txt (line 20))
+#9 7.459   Downloading opentelemetry_api-1.45.2-py3-none-any.whl.metadata (1.4 kB)
+#9 7.544 Collecting packaging==26.3 (from -r requirements.txt (line 21))
+#9 7.604   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+#9 7.680 Collecting pluggy==1.7.0 (from -r requirements.txt (line 22))
+#9 7.739   Downloading pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)
+#9 7.971 Collecting psycopg2-binary==2.9.13 (from -r requirements.txt (line 23))
+#9 8.031   Downloading psycopg2_binary-2.9.13-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (4.9 kB)
+#9 8.097 Collecting pwdlib==0.3.1 (from -r requirements.txt (line 24))
+#9 8.162   Downloading pwdlib-0.3.1-py3-none-any.whl.metadata (5.6 kB)
+#9 8.239 Collecting pycparser==3.12 (from -r requirements.txt (line 25))
+#9 8.300   Downloading pycparser-3.12-py3-none-any.whl.metadata (9.7 kB)
+#9 8.684 Collecting pydantic==2.14.3 (from -r requirements.txt (line 26))
+#9 8.747   Downloading pydantic-2.14.3-py3-none-any.whl.metadata (141 kB)
+#9 8.948 Collecting pydantic-settings==2.16.2 (from -r requirements.txt (line 27))
+#9 9.007   Downloading pydantic_settings-2.16.2-py3-none-any.whl.metadata (4.0 kB)
+#9 11.02 Collecting pydantic_core==2.50.4 (from -r requirements.txt (line 28))
+#9 11.09   Downloading pydantic_core-2.50.4-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (6.6 kB)
+#9 11.17 Collecting Pygments==2.21.0 (from -r requirements.txt (line 29))
+#9 11.23   Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+#9 11.34 Collecting pytest==9.2.0 (from -r requirements.txt (line 30))
+#9 11.41   Downloading pytest-9.2.0-py3-none-any.whl.metadata (7.9 kB)
+#9 11.49 Collecting python-dotenv==1.2.4 (from -r requirements.txt (line 31))
+#9 11.55   Downloading python_dotenv-1.2.4-py3-none-any.whl.metadata (29 kB)
+#9 11.64 Collecting python-multipart==0.0.33 (from -r requirements.txt (line 32))
+#9 11.70   Downloading python_multipart-0.0.33-py3-none-any.whl.metadata (6.3 kB)
+#9 11.84 Collecting PyYAML==6.0.3 (from -r requirements.txt (line 33))
+#9 11.91   Downloading pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+#9 12.78 Collecting SQLAlchemy==2.1.8 (from -r requirements.txt (line 34))
+#9 12.84   Downloading sqlalchemy-2.1.8-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (9.7 kB)
+#9 12.94 Collecting starlette==1.10.0 (from -r requirements.txt (line 35))
+#9 13.00   Downloading starlette-1.10.0-py3-none-any.whl.metadata (6.6 kB)
+#9 13.06 Collecting typing-inspection==0.4.5 (from -r requirements.txt (line 36))
+#9 13.12   Downloading typing_inspection-0.4.5-py3-none-any.whl.metadata (2.6 kB)
+#9 13.20 Collecting typing_extensions==4.16.0 (from -r requirements.txt (line 37))
+#9 13.26   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+#9 13.35 Collecting uvicorn==0.54.0 (from -r requirements.txt (line 38))
+#9 13.42   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+#9 13.64 Collecting watchfiles==1.3.0 (from -r requirements.txt (line 39))
+#9 13.71   Downloading watchfiles-1.3.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.9 kB)
+#9 14.06 Collecting websockets==17.4 (from -r requirements.txt (line 40))
+#9 14.28   Downloading websockets-17.4-cp313-cp313-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.3 kB)
+#9 14.37 Downloading alembic-1.20.1-py3-none-any.whl (270 kB)
+#9 14.51 Downloading annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)
+#9 14.57 Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+#9 14.64 Downloading anyio-4.16.0-py3-none-any.whl (134 kB)
+#9 14.72 Downloading argon2_cffi-25.1.0-py3-none-any.whl (14 kB)
+#9 14.78 Downloading argon2_cffi_bindings-26.1.0-cp310-abi3-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl (26 kB)
+#9 14.85 Downloading certifi-2026.10.23-py3-none-any.whl (135 kB)
+#9 14.94 Downloading cffi-2.1.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (221 kB)
+#9 15.03 Downloading click-8.5.1-py3-none-any.whl (126 kB)
+#9 15.12 Downloading colorama-0.4.6-py2.py3-none-any.whl (25 kB)
+#9 15.19 Downloading fastapi-0.162.2-py3-none-any.whl (151 kB)
+#9 15.27 Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+#9 15.34 Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+#9 15.48 Downloading httptools-0.9.0-cp313-cp313-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (520 kB)
+#9 16.36 Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+#9 16.48 Downloading idna-3.20-py3-none-any.whl (69 kB)
+#9 16.68 Downloading iniconfig-2.3.1-py3-none-any.whl (7.6 kB)
+#9 16.76 Downloading mako-1.4.3-py3-none-any.whl (80 kB)
+#9 16.89 Downloading markupsafe-3.0.4-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (23 kB)
+#9 17.03 Downloading opentelemetry_api-1.45.2-py3-none-any.whl (60 kB)
+#9 17.16 Downloading packaging-26.3-py3-none-any.whl (129 kB)
+#9 17.30 Downloading pluggy-1.7.0-py3-none-any.whl (27 kB)
+#9 17.43 Downloading psycopg2_binary-2.9.13-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (4.3 MB)
+#9 20.29    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.3/4.3 MB 1.5 MB/s  0:00:02
+#9 20.35 Downloading pwdlib-0.3.1-py3-none-any.whl (9.3 kB)
+#9 20.42 Downloading pycparser-3.12-py3-none-any.whl (62 kB)
+#9 20.51 Downloading pydantic-2.14.3-py3-none-any.whl (494 kB)
+#9 20.83 Downloading pydantic_settings-2.16.2-py3-none-any.whl (81 kB)
+#9 20.94 Downloading pydantic_core-2.50.4-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (2.3 MB)
+#9 22.25    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.3/2.3 MB 1.7 MB/s  0:00:01
+#9 22.32 Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+#9 22.93    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 2.2 MB/s  0:00:00
+#9 22.99 Downloading pytest-9.2.0-py3-none-any.whl (411 kB)
+#9 23.43 Downloading python_dotenv-1.2.4-py3-none-any.whl (23 kB)
+#9 23.53 Downloading python_multipart-0.0.33-py3-none-any.whl (32 kB)
+#9 23.60 Downloading pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (801 kB)
+#9 23.95    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 801.6/801.6 kB 2.2 MB/s  0:00:00
+#9 24.02 Downloading sqlalchemy-2.1.8-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.7 MB)
+#9 26.00    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.7/4.7 MB 2.4 MB/s  0:00:01
+#9 26.07 Downloading starlette-1.10.0-py3-none-any.whl (80 kB)
+#9 26.15 Downloading typing_inspection-0.4.5-py3-none-any.whl (14 kB)
+#9 26.22 Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+#9 26.31 Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+#9 26.41 Downloading watchfiles-1.3.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (458 kB)
+#9 26.63 Downloading websockets-17.4-cp313-cp313-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (226 kB)
+#9 26.90 Installing collected packages: websockets, typing_extensions, PyYAML, python-multipart, python-dotenv, Pygments, pycparser, pwdlib, psycopg2-binary, pluggy, packaging, MarkupSafe, iniconfig, idna, httptools, h11, colorama, click, certifi, annotated-types, annotated-doc, uvicorn, typing-inspection, SQLAlchemy, pytest, pydantic_core, opentelemetry-api, Mako, httpcore, cffi, anyio, watchfiles, starlette, pydantic, httpx, argon2-cffi-bindings, alembic, pydantic-settings, fastapi, argon2-cffi
+#9 30.81 
+#9 30.81 Successfully installed Mako-1.4.3 MarkupSafe-3.0.4 PyYAML-6.0.3 Pygments-2.21.0 SQLAlchemy-2.1.8 alembic-1.20.1 annotated-doc-0.0.5 annotated-types-0.8.0 anyio-4.16.0 argon2-cffi-25.1.0 argon2-cffi-bindings-26.1.0 certifi-2026.10.23 cffi-2.1.1 click-8.5.1 colorama-0.4.6 fastapi-0.162.2 h11-0.16.0 httpcore-1.0.9 httptools-0.9.0 httpx-0.28.1 idna-3.20 iniconfig-2.3.1 opentelemetry-api-1.45.2 packaging-26.3 pluggy-1.7.0 psycopg2-binary-2.9.13 pwdlib-0.3.1 pycparser-3.12 pydantic-2.14.3 pydantic-settings-2.16.2 pydantic_core-2.50.4 pytest-9.2.0 python-dotenv-1.2.4 python-multipart-0.0.33 starlette-1.10.0 typing-inspection-0.4.5 typing_extensions-4.16.0 uvicorn-0.54.0 watchfiles-1.3.0 websockets-17.4
+#9 30.81 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+#9 DONE 31.0s
+
+#10 [5/9] RUN useradd --create-home --shell /usr/sbin/nologin appuser     && mkdir -p /app/storage/objects     && chown -R appuser:appuser /app/storage
+#10 DONE 0.4s
+
+#11 [6/9] COPY --chown=appuser:appuser app ./app
+#11 DONE 0.1s
+
+#12 [7/9] COPY --chown=appuser:appuser migrations ./migrations
+#12 DONE 0.1s
+
+#13 [8/9] COPY --chown=appuser:appuser alembic.ini ./
+#13 DONE 0.1s
+
+#14 [9/9] COPY --chown=appuser:appuser run.py ./
+#14 DONE 0.1s
+
+#15 exporting to image
+#15 exporting layers
+#15 exporting layers 2.8s done
+#15 exporting manifest sha256:f914f4900a100f7d43d4b0b2e550c942c2c423aed4a6af4a97007d3dd7abb123 0.0s done
+#15 exporting config sha256:1d852849788bd06f687be4bdcdb316998d6fa57f2f128f38c8ea3e74c4c2817c 0.0s done
+#15 exporting attestation manifest sha256:5b46f513d207ba6e0bc893debf8d4c44a2624dde0f728a2c3f355e66ec36fdd0 0.0s done
+#15 exporting manifest list sha256:06857787dadf4732f87de9e2d43387d1edbcf48f947e47eb6b3ed015cf10dcd8
+#15 exporting manifest list sha256:06857787dadf4732f87de9e2d43387d1edbcf48f947e47eb6b3ed015cf10dcd8 0.0s done
+#15 naming to docker.io/library/cloud-application:0.7 done
+#15 unpacking to docker.io/library/cloud-application:0.7
+#15 unpacking to docker.io/library/cloud-application:0.7 1.3s done
+#15 DONE 4.3s
+[exit=0]
+
+$ dk image ls cloud-application
+IMAGE                   ID             DISK USAGE   CONTENT SIZE   EXTRA
+cloud-application:0.7   06857787dadf        297MB         70.4MB        
+[exit=0]
+
+Image ID: sha256:06857787dadf4732f87de9e2d43387d1edbcf48f947e47eb6b3ed015cf10dcd8
+Revision label: fb7e384b2fbcdd6bdc11f4730dba26a8f9399981
+Commit: fb7e384b2fbcdd6bdc11f4730dba26a8f9399981
+
+
+========== 3. UID/GID пользователя контейнера ==========
+uid=1000 gid=1000
+
+$ dk run --rm --entrypoint sh cloud-application:0.7 -c id; whoami
+uid=1000(appuser) gid=1000(appuser) groups=1000(appuser)
+appuser
+[exit=0]
+
+
+========== 4. Runtime-секреты ==========
+
+$ ls -l C:/Nurbol/работа/cloud-application/labs/lab-37/runtime/secrets
+total 2
+-rw-r--r-- 1 Thunderobot 197121 45 Nov 22 17:56 auth_secret
+-rw-r--r-- 1 Thunderobot 197121 34 Nov 22 17:56 lab_db_password
+[exit=0]
+
+Содержимое секретов не выводится. Размеры файлов:
+
+$ wc -c C:/Nurbol/работа/cloud-application/labs/lab-37/runtime/secrets/auth_secret C:/Nurbol/работа/cloud-application/labs/lab-37/runtime/secrets/lab_db_password
+45 C:/Nurbol/работа/cloud-application/labs/lab-37/runtime/secrets/auth_secret
+34 C:/Nurbol/работа/cloud-application/labs/lab-37/runtime/secrets/lab_db_password
+79 total
+[exit=0]
+
+
+========== 5. Запуск контейнера ==========
+
+$ dk run -d --name cloud-application-lr37 --restart unless-stopped -p 127.0.0.1:8080:8000 --env-file C:/Nurbol/работа/cloud-application/labs/lab-37/deploy/etc/cloud-application.env -e APP_HOST=0.0.0.0 -e APP_PORT=8000 -e HTTPS_ENABLED=false --mount type=bind,src=C:\Nurbol\работа\cloud-application\labs\lab-37\runtime\secrets,dst=/app/secrets,readonly cloud-application:0.7
+a2111aa12ff4168e691abc28f4f60b9f7a8819b85915f075c2a83c56de1b51ba
+[exit=0]
+
+$ dk ps --filter name=cloud-application-lr37 --format table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}
+NAMES                    IMAGE                   STATUS         PORTS
+cloud-application-lr37   cloud-application:0.7   Up 4 seconds   127.0.0.1:8080->8000/tcp
+[exit=0]
+
+$ dk inspect cloud-application-lr37 --format {{.State.Status}}
+running
+[exit=0]
+
+$ dk port cloud-application-lr37
+8000/tcp -> 127.0.0.1:8080
+[exit=0]
+
+$ dk inspect cloud-application-lr37 --format {{.HostConfig.RestartPolicy.Name}}
+unless-stopped
+[exit=0]
+
+$ dk inspect cloud-application-lr37 --format {{.Image}}
+sha256:06857787dadf4732f87de9e2d43387d1edbcf48f947e47eb6b3ed015cf10dcd8
+[exit=0]
+Image ID образа: sha256:06857787dadf4732f87de9e2d43387d1edbcf48f947e47eb6b3ed015cf10dcd8
+
+$ dk inspect cloud-application-lr37 --format {{json .Mounts}}
+[{"Type":"bind","Source":"C:\\Nurbol\\работа\\cloud-application\\labs\\lab-37\\runtime\\secrets","Destination":"/app/secrets","Mode":"","RW":false,"Propagation":"rprivate"}]
+[exit=0]
+
+
+========== 6. Runtime-среда и секреты внутри контейнера ==========
+
+$ dk exec cloud-application-lr37 whoami
+appuser
+[exit=0]
+
+$ dk exec cloud-application-lr37 pwd
+/app
+[exit=0]
+
+$ dk exec cloud-application-lr37 python --version
+Python 3.13.18
+[exit=0]
+
+$ dk exec cloud-application-lr37 sh -c ls -ln /app/secrets
+total 0
+-rwxrwxrwx 1 0 0 45 Nov 22 12:56 auth_secret
+-rwxrwxrwx 1 0 0 34 Nov 22 12:56 lab_db_password
+[exit=0]
+
+$ dk exec cloud-application-lr37 sh -c test -r /app/secrets/auth_secret && echo AUTH_SECRET_READABLE
+AUTH_SECRET_READABLE
+[exit=0]
+
+$ dk exec cloud-application-lr37 sh -c test -r /app/secrets/lab_db_password && echo DB_SECRET_READABLE
+DB_SECRET_READABLE
+[exit=0]
+
+$ dk exec cloud-application-lr37 sh -c test -w /app/secrets/auth_secret && echo WRITABLE || echo READ_ONLY_CONFIRMED
+READ_ONLY_CONFIRMED
+[exit=0]
+
+
+========== 7. Журнал и smoke-test ==========
+
+$ dk logs --tail 40 cloud-application-lr37
+{"timestamp": "2026-11-22T12:56:02.790579+00:00", "level": "INFO", "logger": "app.main", "message": "Cloud Application configured", "request_id": "-", "service": "cloud-application", "event": "application_configured"}
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+[exit=0]
+
+$ curl --noproxy * -i http://127.0.0.1:8080/status
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100    105 100    105   0      0  26744      0                              0100    105 100    105   0      0  26315      0                              0100    105 100    105   0      0  25996      0                              0
+HTTP/1.1 200 OK
+date: Sun, 22 Nov 2026 12:56:08 GMT
+server: uvicorn
+content-length: 105
+content-type: application/json
+x-request-id: ecc1f6b14ab6473db50213de730aea62
+
+{"status":"ok","service":"CloudApplication","environment":"production","debug":false,"api_prefix":"/api"}[exit=0]
+
+$ curl --noproxy * -s -o /dev/null -w %{http_code}\n http://127.0.0.1:8080/docs
+200
+[exit=0]
+
+$ curl --noproxy * -s -o /dev/null -w %{http_code}\n http://127.0.0.1:8080/openapi.json
+200
+[exit=0]
+
+
+========== 8. Жизненный цикл: stop / start / restart ==========
+
+$ dk stop cloud-application-lr37
+cloud-application-lr37
+[exit=0]
+
+$ dk ps --filter name=cloud-application-lr37
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+[exit=0]
+
+$ dk ps -a --filter name=cloud-application-lr37 --format table {{.Names}}\t{{.Status}}
+NAMES                    STATUS
+cloud-application-lr37   Exited (0) Less than a second ago
+[exit=0]
+
+$ dk start cloud-application-lr37
+cloud-application-lr37
+[exit=0]
+
+$ curl --noproxy * -s -o /dev/null -w %{http_code}\n http://127.0.0.1:8080/status
+200
+[exit=0]
+
+$ dk restart cloud-application-lr37
+cloud-application-lr37
+[exit=0]
+
+PID до restart: 10760
+PID после restart: 10853
+
+$ curl --noproxy * -s http://127.0.0.1:8080/status
+{"status":"ok","service":"CloudApplication","environment":"production","debug":false,"api_prefix":"/api"}[exit=0]
+
+
+========== 9. Неуспешный release 0.8-bad ==========
+
+$ cat C:/Nurbol/работа/cloud-application/labs/lab-37/runtime/bad-image/Dockerfile
+FROM cloud-application:0.7
+
+CMD ["python", "/app/missing_run.py"]
+[exit=0]
+
+$ dk build -t cloud-application:0.8-bad C:/Nurbol/работа/cloud-application/labs/lab-37/runtime/bad-image
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 103B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/cloud-application:0.7
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context:
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/1] FROM docker.io/library/cloud-application:0.7@sha256:06857787dadf4732f87de9e2d43387d1edbcf48f947e47eb6b3ed015cf10dcd8
+#4 resolve docker.io/library/cloud-application:0.7@sha256:06857787dadf4732f87de9e2d43387d1edbcf48f947e47eb6b3ed015cf10dcd8 0.0s done
+#4 DONE 0.1s
+
+#5 exporting to image
+#5 exporting layers 0.0s done
+#5 exporting manifest sha256:ed794739ae93904052f427d87b905607d6c6ef1d110e3266bd8d4c22e9d009b5 0.0s done
+#5 exporting config sha256:1bf0cbdc0e223689e56ee57d4fdd9cfe7a533a9980c6decf4c89da4eafb1fdfb 0.0s done
+#5 exporting attestation manifest sha256:6ceb750e0ba6fd9bb5a4a82d06baa217e102b6120133cf1ade4b677418cb3920 0.0s done
+#5 exporting manifest list sha256:03a5bf1d9b79e0f69b194424afddfc46e34f4dd350ee38da39428212cc854afc
+#5 exporting manifest list sha256:03a5bf1d9b79e0f69b194424afddfc46e34f4dd350ee38da39428212cc854afc 0.0s done
+#5 naming to docker.io/library/cloud-application:0.8-bad done
+#5 unpacking to docker.io/library/cloud-application:0.8-bad 0.0s done
+#5 DONE 0.2s
+[exit=0]
+
+$ dk inspect cloud-application-lr37 --format {{.Config.Image}}
+cloud-application:0.7
+[exit=0]
+
+$ dk rm -f cloud-application-lr37
+cloud-application-lr37
+[exit=0]
+
+$ dk run -d --name cloud-application-lr37 --restart no -p 127.0.0.1:8080:8000 --env-file C:/Nurbol/работа/cloud-application/labs/lab-37/deploy/etc/cloud-application.env -e APP_HOST=0.0.0.0 -e APP_PORT=8000 -e HTTPS_ENABLED=false --mount type=bind,src=C:\Nurbol\работа\cloud-application\labs\lab-37\runtime\secrets,dst=/app/secrets,readonly cloud-application:0.8-bad
+a5e927a58e2243034c0d38e7e224ccbb4c78ec07e6c51ee437abf23553ba2d6d
+[exit=0]
+
+$ dk ps --filter name=cloud-application-lr37
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+[exit=0]
+
+$ dk ps -a --filter name=cloud-application-lr37 --format table {{.Names}}\t{{.Status}}
+NAMES                    STATUS
+cloud-application-lr37   Exited (2) 4 seconds ago
+[exit=0]
+
+$ dk logs cloud-application-lr37
+python: can't open file '/app/missing_run.py': [Errno 2] No such file or directory
+[exit=0]
+
+$ dk inspect cloud-application-lr37 --format image={{.Config.Image}} exit={{.State.ExitCode}} status={{.State.Status}}
+image=cloud-application:0.8-bad exit=2 status=exited
+[exit=0]
+
+
+========== 10. Rollback на проверенный image 0.7 ==========
+
+$ dk rm cloud-application-lr37
+cloud-application-lr37
+[exit=0]
+
+$ dk run -d --name cloud-application-lr37 --restart unless-stopped -p 127.0.0.1:8080:8000 --env-file C:/Nurbol/работа/cloud-application/labs/lab-37/deploy/etc/cloud-application.env -e APP_HOST=0.0.0.0 -e APP_PORT=8000 -e HTTPS_ENABLED=false --mount type=bind,src=C:\Nurbol\работа\cloud-application\labs\lab-37\runtime\secrets,dst=/app/secrets,readonly cloud-application:0.7
+f09fda944ea46b2c232570b299b701b2ebd05c10d0fb11a2ccab198d5d913b06
+[exit=0]
+
+$ dk ps --filter name=cloud-application-lr37 --format table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}
+NAMES                    IMAGE                   STATUS         PORTS
+cloud-application-lr37   cloud-application:0.7   Up 4 seconds   127.0.0.1:8080->8000/tcp
+[exit=0]
+
+$ dk inspect cloud-application-lr37 --format {{.Config.Image}}
+cloud-application:0.7
+[exit=0]
+
+$ dk inspect cloud-application-lr37 --format {{.HostConfig.RestartPolicy.Name}}
+unless-stopped
+[exit=0]
+
+$ dk inspect cloud-application-lr37 --format {{json .Mounts}}
+[{"Type":"bind","Source":"C:\\Nurbol\\работа\\cloud-application\\labs\\lab-37\\runtime\\secrets","Destination":"/app/secrets","Mode":"","RW":false,"Propagation":"rprivate"}]
+[exit=0]
+
+$ curl --noproxy * -i http://127.0.0.1:8080/status
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100    105 100    105   0      0  29428      0                              0100    105 100    105   0      0  28909      0                              0100    105 100    105   0      0  28532      0                              0
+HTTP/1.1 200 OK
+date: Sun, 22 Nov 2026 12:56:30 GMT
+server: uvicorn
+content-length: 105
+content-type: application/json
+x-request-id: cdad65c64479426ba5dba2bb73f516ee
+
+{"status":"ok","service":"CloudApplication","environment":"production","debug":false,"api_prefix":"/api"}[exit=0]
+
+$ dk image rm cloud-application:0.8-bad
+Untagged: cloud-application:0.8-bad
+Deleted: sha256:03a5bf1d9b79e0f69b194424afddfc46e34f4dd350ee38da39428212cc854afc
+[exit=0]
+
+
+========== 11. Итоговый паспорт контейнерного deployment ==========
+hostname: DESKTOP-3FUHFLF
+Docker server: 29.9.3
+Git commit: fb7e384b2fbcdd6bdc11f4730dba26a8f9399981
+Image tag: cloud-application:0.7
+Image ID: sha256:06857787dadf4732f87de9e2d43387d1edbcf48f947e47eb6b3ed015cf10dcd8
+Revision label: fb7e384b2fbcdd6bdc11f4730dba26a8f9399981
+Container name: cloud-application-lr37
+Container status: running
+Container PID: 11061
+Container user: appuser
+Restart policy: unless-stopped
+Host bind: 127.0.0.1:8080
+/status: 200
+/docs: 200
+
+Все шаги ЛР 37 выполнены.

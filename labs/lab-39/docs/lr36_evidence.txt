@@ -1,0 +1,554 @@
+
+
+========== 1. Целевая среда ==========
+
+$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 24.04.5 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.5 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+[exit=0]
+
+$ ps -p 1 -o comm=
+systemd
+[exit=0]
+
+$ hostnamectl
+ Static hostname: e54f726edf6d
+       Icon name: computer-container
+         Chassis: container ☐
+      Machine ID: 426bd01b5bef4e359daef1a6e33105c4
+         Boot ID: a4c57e05055441c197037f917990be51
+  Virtualization: wsl
+Operating System: Ubuntu 24.04.5 LTS
+          Kernel: Linux 6.18.58.1-microsoft-standard-WSL2
+    Architecture: x86-64
+[exit=0]
+
+$ python3 --version
+Python 3.12.3
+[exit=0]
+
+$ command -v git || echo "git: not installed yet"
+git: not installed yet
+[exit=0]
+
+$ command -v curl || echo "curl: not installed yet"
+curl: not installed yet
+[exit=0]
+
+
+========== 2. Установка системных пакетов ==========
+
+$ apt-get update -qq
+[exit=0]
+
+$ apt-get install -y -qq git python3 python3-venv python3-pip curl iproute2 sudo > /tmp/lr36_apt.log 2>&1
+[exit=0]
+
+Фрагмент журнала apt:
+Setting up libgd3:amd64 (2.3.3-9ubuntu5) ...
+Setting up libc-devtools (2.39-0ubuntu8.12) ...
+Setting up libheif-plugin-aomdec:amd64 (1.17.6-1ubuntu4.9) ...
+Setting up libheif-plugin-aomenc:amd64 (1.17.6-1ubuntu4.9) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.12) ...
+
+$ python3 --version
+Python 3.12.3
+[exit=0]
+
+$ git --version
+git version 2.43.0
+[exit=0]
+
+$ which curl ss
+/usr/bin/curl
+/usr/bin/ss
+[exit=0]
+
+
+========== 3. Системный пользователь cloudapp ==========
+
+$ useradd --system --user-group --home-dir /opt/cloud-application --shell /usr/sbin/nologin cloudapp
+[exit=0]
+
+$ id cloudapp
+uid=995(cloudapp) gid=995(cloudapp) groups=995(cloudapp)
+[exit=0]
+
+$ getent passwd cloudapp
+cloudapp:x:995:995::/opt/cloud-application:/usr/sbin/nologin
+[exit=0]
+
+
+========== 4. Структура каталогов deployment ==========
+
+$ install -d -o cloudapp -g cloudapp -m 0755 /opt/cloud-application
+[exit=0]
+
+$ install -d -o root -g cloudapp -m 0750 /etc/cloud-application
+[exit=0]
+
+$ ls -ld /opt/cloud-application /etc/cloud-application
+drwxr-x--- 2 root     cloudapp 4096 Nov 22 12:51 /etc/cloud-application
+drwxr-xr-x 2 cloudapp cloudapp 4096 Nov 22 12:51 /opt/cloud-application
+[exit=0]
+
+
+========== 5. Получение приложения из Git ==========
+
+$ ls -l /tmp/cloud-application.bundle
+-rwxr-xr-x 1 root root 98876 Nov 22 12:50 /tmp/cloud-application.bundle
+[exit=0]
+
+$ git clone /tmp/cloud-application.bundle /opt/cloud-application/app
+Cloning into '/opt/cloud-application/app'...
+[exit=0]
+
+$ chown -R cloudapp:cloudapp /opt/cloud-application/app
+[exit=0]
+
+$ sudo -u cloudapp git -C /opt/cloud-application/app status --short
+[exit=0]
+
+Полный commit hash: 665e168195fe9c7d0976f2dcd18920d8ee21cc7c
+Короткий commit hash: 665e168
+
+$ sudo -u cloudapp git -C /opt/cloud-application/app log -1 --oneline
+665e168 Cloud Application 0.7 deployment snapshot (LR36)
+[exit=0]
+
+$ ls -la /opt/cloud-application/app
+total 124
+drwxr-xr-x 10 cloudapp cloudapp  4096 Nov 22 12:51 .
+drwxr-xr-x  3 cloudapp cloudapp  4096 Nov 22 12:51 ..
+-rw-r--r--  1 cloudapp cloudapp   257 Nov 22 12:51 .dockerignore
+-rw-r--r--  1 cloudapp cloudapp   941 Nov 22 12:51 .env.example
+drwxr-xr-x  8 cloudapp cloudapp  4096 Nov 22 12:51 .git
+-rw-r--r--  1 cloudapp cloudapp   164 Nov 22 12:51 .gitignore
+-rw-r--r--  1 cloudapp cloudapp  1017 Nov 22 12:51 Dockerfile
+-rw-r--r--  1 cloudapp cloudapp  3191 Nov 22 12:51 PROJECT_TASKS.md
+-rw-r--r--  1 cloudapp cloudapp 27359 Nov 22 12:51 README.md
+-rw-r--r--  1 cloudapp cloudapp   564 Nov 22 12:51 alembic.ini
+drwxr-xr-x 10 cloudapp cloudapp  4096 Nov 22 12:51 app
+drwxr-xr-x  2 cloudapp cloudapp  4096 Nov 22 12:51 certs
+-rw-r--r--  1 cloudapp cloudapp  2747 Nov 22 12:51 compose.yaml
+drwxr-xr-x  4 cloudapp cloudapp  4096 Nov 22 12:51 deploy
+drwxr-xr-x  3 cloudapp cloudapp  4096 Nov 22 12:51 docker
+drwxr-xr-x  3 cloudapp cloudapp  4096 Nov 22 12:51 docs
+drwxr-xr-x  3 cloudapp cloudapp  4096 Nov 22 12:51 migrations
+-rw-r--r--  1 cloudapp cloudapp   271 Nov 22 12:51 pyproject.toml
+-rw-r--r--  1 cloudapp cloudapp  4709 Nov 22 12:51 requests.http
+-rw-r--r--  1 cloudapp cloudapp    25 Nov 22 12:51 requirements-dev.txt
+-rw-r--r--  1 cloudapp cloudapp   117 Nov 22 12:51 requirements-direct.txt
+-rw-r--r--  1 cloudapp cloudapp   762 Nov 22 12:51 requirements.txt
+-rw-r--r--  1 cloudapp cloudapp  1026 Nov 22 12:51 run.py
+drwxr-xr-x  4 cloudapp cloudapp  4096 Nov 22 12:51 scripts
+[exit=0]
+
+
+========== 6. Python virtual environment и зависимости ==========
+
+$ sudo -u cloudapp python3 -m venv /opt/cloud-application/venv
+[exit=0]
+
+$ /opt/cloud-application/venv/bin/python --version
+Python 3.12.3
+[exit=0]
+
+Установка runtime-зависимостей (фрагмент вывода):
+[exit=0]
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 80.6/80.6 kB 2.3 MB/s eta 0:00:00
+Downloading typing_inspection-0.4.5-py3-none-any.whl (14 kB)
+Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.6/45.6 kB 2.1 MB/s eta 0:00:00
+Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 87.4/87.4 kB 2.4 MB/s eta 0:00:00
+Downloading watchfiles-1.3.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (458 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 458.4/458.4 kB 2.6 MB/s eta 0:00:00
+Downloading websockets-17.4-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (226 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 226.3/226.3 kB 2.8 MB/s eta 0:00:00
+Installing collected packages: websockets, typing_extensions, PyYAML, python-multipart, python-dotenv, Pygments, pycparser, pwdlib, psycopg2-binary, pluggy, packaging, MarkupSafe, iniconfig, idna, httptools, h11, colorama, click, certifi, annotated-types, annotated-doc, uvicorn, typing-inspection, SQLAlchemy, pytest, pydantic_core, opentelemetry-api, Mako, httpcore, cffi, anyio, watchfiles, starlette, pydantic, httpx, argon2-cffi-bindings, alembic, pydantic-settings, fastapi, argon2-cffi
+Successfully installed Mako-1.4.3 MarkupSafe-3.0.4 PyYAML-6.0.3 Pygments-2.21.0 SQLAlchemy-2.1.8 alembic-1.20.1 annotated-doc-0.0.5 annotated-types-0.8.0 anyio-4.16.0 argon2-cffi-25.1.0 argon2-cffi-bindings-26.1.0 certifi-2026.10.23 cffi-2.1.1 click-8.5.1 colorama-0.4.6 fastapi-0.162.2 h11-0.16.0 httpcore-1.0.9 httptools-0.9.0 httpx-0.28.1 idna-3.20 iniconfig-2.3.1 opentelemetry-api-1.45.2 packaging-26.3 pluggy-1.7.0 psycopg2-binary-2.9.13 pwdlib-0.3.1 pycparser-3.12 pydantic-2.14.3 pydantic-settings-2.16.2 pydantic_core-2.50.4 pytest-9.2.0 python-dotenv-1.2.4 python-multipart-0.0.33 starlette-1.10.0 typing-inspection-0.4.5 typing_extensions-4.16.0 uvicorn-0.54.0 watchfiles-1.3.0 websockets-17.4
+
+$ sudo -u cloudapp /opt/cloud-application/venv/bin/python -m pip check
+No broken requirements found.
+[exit=0]
+
+$ sudo -u cloudapp /opt/cloud-application/venv/bin/python -c "import fastapi, uvicorn, sqlalchemy, httpx; print(\"IMPORTS_OK\")"
+IMPORTS_OK
+[exit=0]
+
+
+========== 7. Эксплуатационная конфигурация ==========
+
+$ install -m 0640 -o root -g cloudapp /work/deploy/etc/cloud-application.env /etc/cloud-application/cloud-application.env
+[exit=0]
+
+$ ls -l /etc/cloud-application/cloud-application.env
+-rw-r----- 1 root cloudapp 383 Nov 22 12:52 /etc/cloud-application/cloud-application.env
+[exit=0]
+
+$ grep -v -E 'PASSWORD|SECRET|TOKEN' /etc/cloud-application/cloud-application.env
+APP_NAME=CloudApplication
+APP_VERSION=0.7
+APP_ENV=production
+
+APP_HOST=127.0.0.1
+APP_PORT=8000
+DEBUG=false
+
+HTTPS_ENABLED=false
+
+DB_BACKEND=sqlite
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_NAME=cloud_application
+DB_USER=postgres
+
+NOTIFICATION_SERVICE_URL=http://127.0.0.1:9000
+NOTIFICATION_TIMEOUT_SECONDS=2.0
+NOTIFICATION_MAX_ATTEMPTS=3
+NOTIFICATION_RETRY_DELAY_SECONDS=0.5
+
+LOG_LEVEL=INFO
+[exit=0]
+
+
+========== 8. Секреты вне Git ==========
+
+$ install -d -o root -g cloudapp -m 0750 /etc/cloud-application/secrets
+[exit=0]
+
+$ python3 -c 'import secrets; print(secrets.token_urlsafe(32))' > /etc/cloud-application/secrets/auth_secret
+[exit=0]
+
+$ python3 -c 'import secrets; print(secrets.token_urlsafe(24))' > /etc/cloud-application/secrets/lab_db_password
+[exit=0]
+
+$ chown root:cloudapp /etc/cloud-application/secrets/auth_secret /etc/cloud-application/secrets/lab_db_password
+[exit=0]
+
+$ chmod 0640 /etc/cloud-application/secrets/auth_secret /etc/cloud-application/secrets/lab_db_password
+[exit=0]
+
+$ ls -l /etc/cloud-application/secrets
+total 8
+-rw-r----- 1 root cloudapp 44 Nov 22 12:52 auth_secret
+-rw-r----- 1 root cloudapp 33 Nov 22 12:52 lab_db_password
+[exit=0]
+
+$ sudo -u cloudapp test -r /etc/cloud-application/secrets/auth_secret && echo AUTH_SECRET_READABLE
+AUTH_SECRET_READABLE
+[exit=0]
+
+$ sudo -u cloudapp test -r /etc/cloud-application/secrets/lab_db_password && echo DB_SECRET_READABLE
+DB_SECRET_READABLE
+[exit=0]
+
+$ ln -s /etc/cloud-application/secrets /opt/cloud-application/app/secrets
+[exit=0]
+
+$ ls -l /opt/cloud-application/app/secrets
+lrwxrwxrwx 1 root root 30 Nov 22 12:52 /opt/cloud-application/app/secrets -> /etc/cloud-application/secrets
+[exit=0]
+
+$ install -d -o cloudapp -g cloudapp -m 0750 /opt/cloud-application/app/storage/objects
+[exit=0]
+
+$ ls -ld /opt/cloud-application/app/storage/objects
+drwxr-x--- 2 cloudapp cloudapp 4096 Nov 22 12:52 /opt/cloud-application/app/storage/objects
+[exit=0]
+
+$ sudo -u cloudapp test -r /opt/cloud-application/app/secrets/auth_secret && echo SECRET_VIA_SYMLINK_OK
+SECRET_VIA_SYMLINK_OK
+[exit=0]
+
+
+========== 9. systemd unit Cloud Application ==========
+
+$ install -m 0644 /work/deploy/systemd/cloud-application.service /etc/systemd/system/cloud-application.service
+[exit=0]
+
+$ systemctl cat cloud-application.service
+# /etc/systemd/system/cloud-application.service
+[Unit]
+Description=Cloud Application FastAPI Service
+After=network.target
+
+[Service]
+Type=simple
+User=cloudapp
+Group=cloudapp
+
+WorkingDirectory=/opt/cloud-application/app
+
+EnvironmentFile=/etc/cloud-application/cloud-application.env
+
+ExecStart=/opt/cloud-application/venv/bin/python /opt/cloud-application/app/run.py
+
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+
+UMask=0027
+NoNewPrivileges=true
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+[exit=0]
+
+$ systemd-analyze verify /etc/systemd/system/cloud-application.service
+[exit=0]
+
+$ systemctl daemon-reload
+[exit=0]
+
+$ systemctl enable --now cloud-application.service
+Created symlink /etc/systemd/system/multi-user.target.wants/cloud-application.service -> /etc/systemd/system/cloud-application.service.
+[exit=0]
+
+$ systemctl is-enabled cloud-application.service
+enabled
+[exit=0]
+
+$ systemctl is-active cloud-application.service
+active
+[exit=0]
+
+$ systemctl status cloud-application.service --no-pager
+* cloud-application.service - Cloud Application FastAPI Service
+     Loaded: loaded (/etc/systemd/system/cloud-application.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-11-22 12:52:11 UTC; 3s ago
+   Main PID: 2419 (python)
+      Tasks: 1 (limit: 9363)
+     Memory: 53.3M (peak: 53.3M)
+        CPU: 520ms
+     CGroup: /docker/e54f726edf6d7f1cc90bf110729e091e5723aa12d4bfa053d532d2c139047f6d/system.slice/cloud-application.service
+             `-2419 /opt/cloud-application/venv/bin/python /opt/cloud-application/app/run.py
+
+Nov 22 12:52:11 e54f726edf6d systemd[1]: Started cloud-application.service - Cloud Application FastAPI Service.
+Nov 22 12:52:12 e54f726edf6d python[2419]: {"timestamp": "2026-11-22T12:52:12.370675+00:00", "level": "INFO", "logger": "app.main", "message": "Cloud Application configured", "request_id": "-", "service": "cloud-application", "event": "application_configured"}
+Nov 22 12:52:12 e54f726edf6d python[2419]: INFO:     Started server process [2419]
+Nov 22 12:52:12 e54f726edf6d python[2419]: INFO:     Waiting for application startup.
+Nov 22 12:52:12 e54f726edf6d python[2419]: INFO:     Application startup complete.
+Nov 22 12:52:12 e54f726edf6d python[2419]: INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+[exit=0]
+
+$ systemctl show cloud-application.service -p ActiveState -p SubState -p MainPID -p ExecMainStatus -p Restart -p UnitFileState
+Restart=on-failure
+MainPID=2419
+ExecMainStatus=0
+ActiveState=active
+SubState=running
+UnitFileState=enabled
+[exit=0]
+
+MainPID: 2419
+
+$ ps -fp 2419
+UID          PID    PPID  C STIME TTY          TIME CMD
+cloudapp    2419       1 16 12:52 ?        00:00:00 /opt/cloud-application/venv/bin/python /opt/cloud-application/app/run.py
+[exit=0]
+
+$ journalctl -u cloud-application.service -n 40 --no-pager
+Nov 22 12:52:11 e54f726edf6d systemd[1]: Started cloud-application.service - Cloud Application FastAPI Service.
+Nov 22 12:52:12 e54f726edf6d python[2419]: {"timestamp": "2026-11-22T12:52:12.370675+00:00", "level": "INFO", "logger": "app.main", "message": "Cloud Application configured", "request_id": "-", "service": "cloud-application", "event": "application_configured"}
+Nov 22 12:52:12 e54f726edf6d python[2419]: INFO:     Started server process [2419]
+Nov 22 12:52:12 e54f726edf6d python[2419]: INFO:     Waiting for application startup.
+Nov 22 12:52:12 e54f726edf6d python[2419]: INFO:     Application startup complete.
+Nov 22 12:52:12 e54f726edf6d python[2419]: INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+[exit=0]
+
+
+========== 10. Smoke-test развернутого приложения ==========
+
+$ ss -ltnp | grep ':8000'
+LISTEN 0      2048       127.0.0.1:8000      0.0.0.0:*    users:(("python",pid=2419,fd=6))
+[exit=0]
+
+$ curl -i http://127.0.0.1:8000/status
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0HTTP/1.1 200 OK
+date: Sun, 22 Nov 2026 12:52:14 GMT
+server: uvicorn
+content-length: 105
+content-type: application/json
+x-request-id: b3df3c29065b45d989fea2d024ad41a8
+
+{"status":"ok","service":"CloudApplication","environment":"production","debug":false,"api_prefix":"/api"}100   105  100   105    0     0   1522      0 --:--:-- --:--:-- --:--:--  1544
+[exit=0]
+
+$ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8000/docs
+200
+[exit=0]
+
+$ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8000/openapi.json
+200
+[exit=0]
+
+
+========== 11. Контролируемая ошибка конфигурации и rollback ==========
+
+$ cp /etc/cloud-application/cloud-application.env /etc/cloud-application/cloud-application.env.bak
+[exit=0]
+
+$ ls -l /etc/cloud-application/cloud-application.env*
+-rw-r----- 1 root cloudapp 383 Nov 22 12:52 /etc/cloud-application/cloud-application.env
+-rw-r----- 1 root root     383 Nov 22 12:52 /etc/cloud-application/cloud-application.env.bak
+[exit=0]
+
+$ sed -i 's/^APP_PORT=8000$/APP_PORT=not-a-number/' /etc/cloud-application/cloud-application.env
+[exit=0]
+
+$ grep '^APP_PORT=' /etc/cloud-application/cloud-application.env
+APP_PORT=not-a-number
+[exit=0]
+
+$ systemctl restart cloud-application.service
+[exit=0]
+
+$ systemctl status cloud-application.service --no-pager
+* cloud-application.service - Cloud Application FastAPI Service
+     Loaded: loaded (/etc/systemd/system/cloud-application.service; enabled; preset: enabled)
+     Active: activating (auto-restart) (Result: exit-code) since Sun 2026-11-22 12:52:18 UTC; 1s ago
+    Process: 2444 ExecStart=/opt/cloud-application/venv/bin/python /opt/cloud-application/app/run.py (code=exited, status=1/FAILURE)
+   Main PID: 2444 (code=exited, status=1/FAILURE)
+        CPU: 169ms
+[exit=3]
+
+$ journalctl -u cloud-application.service -n 50 --no-pager
+Nov 22 12:52:14 e54f726edf6d python[2419]: {"timestamp": "2026-11-22T12:52:14.973245+00:00", "level": "INFO", "logger": "app.middleware.request_logging", "message": "HTTP request completed", "request_id": "b3df3c29065b45d989fea2d024ad41a8", "service": "cloud-application", "event": "http_request_completed", "method": "GET", "path": "/status", "status_code": 200, "duration_ms": 1.71}
+Nov 22 12:52:14 e54f726edf6d python[2419]: INFO:     127.0.0.1:38246 - "GET /status HTTP/1.1" 200 OK
+Nov 22 12:52:14 e54f726edf6d python[2419]: {"timestamp": "2026-11-22T12:52:14.978868+00:00", "level": "INFO", "logger": "app.middleware.request_logging", "message": "HTTP request completed", "request_id": "c0cab33cd73a4159bc354ff34de76ccd", "service": "cloud-application", "event": "http_request_completed", "method": "GET", "path": "/docs", "status_code": 200, "duration_ms": 0.19}
+Nov 22 12:52:14 e54f726edf6d python[2419]: INFO:     127.0.0.1:38250 - "GET /docs HTTP/1.1" 200 OK
+Nov 22 12:52:15 e54f726edf6d python[2419]: {"timestamp": "2026-11-22T12:52:15.007087+00:00", "level": "INFO", "logger": "app.middleware.request_logging", "message": "HTTP request completed", "request_id": "4a8a365b672148b19aeb9cabfde37774", "service": "cloud-application", "event": "http_request_completed", "method": "GET", "path": "/openapi.json", "status_code": 200, "duration_ms": 23.33}
+Nov 22 12:52:15 e54f726edf6d python[2419]: INFO:     127.0.0.1:38254 - "GET /openapi.json HTTP/1.1" 200 OK
+Nov 22 12:52:15 e54f726edf6d systemd[1]: Stopping cloud-application.service - Cloud Application FastAPI Service...
+Nov 22 12:52:15 e54f726edf6d python[2419]: INFO:     Shutting down
+Nov 22 12:52:15 e54f726edf6d python[2419]: INFO:     Waiting for application shutdown.
+Nov 22 12:52:15 e54f726edf6d python[2419]: INFO:     Application shutdown complete.
+Nov 22 12:52:15 e54f726edf6d python[2419]: INFO:     Finished server process [2419]
+Nov 22 12:52:15 e54f726edf6d systemd[1]: cloud-application.service: Deactivated successfully.
+Nov 22 12:52:15 e54f726edf6d systemd[1]: Stopped cloud-application.service - Cloud Application FastAPI Service.
+Nov 22 12:52:15 e54f726edf6d systemd[1]: Started cloud-application.service - Cloud Application FastAPI Service.
+Nov 22 12:52:15 e54f726edf6d python[2441]: Traceback (most recent call last):
+Nov 22 12:52:15 e54f726edf6d python[2441]:   File "/opt/cloud-application/app/run.py", line 5, in <module>
+Nov 22 12:52:15 e54f726edf6d python[2441]:     from app.config import settings
+Nov 22 12:52:15 e54f726edf6d python[2441]:   File "/opt/cloud-application/app/app/config.py", line 70, in <module>
+Nov 22 12:52:15 e54f726edf6d python[2441]:     settings = Settings()
+Nov 22 12:52:15 e54f726edf6d python[2441]:                ^^^^^^^^^^
+Nov 22 12:52:15 e54f726edf6d python[2441]:   File "/opt/cloud-application/venv/lib/python3.12/site-packages/pydantic_settings/main.py", line 292, in __init__
+Nov 22 12:52:15 e54f726edf6d python[2441]:     super().__init__(**__pydantic_self__.__class__._settings_build_values(sources, init_kwargs))
+Nov 22 12:52:15 e54f726edf6d python[2441]:   File "/opt/cloud-application/venv/lib/python3.12/site-packages/pydantic/main.py", line 280, in __init__
+Nov 22 12:52:15 e54f726edf6d python[2441]:     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+Nov 22 12:52:15 e54f726edf6d python[2441]:                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 22 12:52:15 e54f726edf6d python[2441]: pydantic_core._pydantic_core.ValidationError: 1 validation error for Settings
+Nov 22 12:52:15 e54f726edf6d python[2441]: app_port
+Nov 22 12:52:15 e54f726edf6d python[2441]:   Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='not-a-number', input_type=str]
+Nov 22 12:52:15 e54f726edf6d python[2441]:     For further information visit https://errors.pydantic.dev/2.14/v/int_parsing
+Nov 22 12:52:15 e54f726edf6d systemd[1]: cloud-application.service: Main process exited, code=exited, status=1/FAILURE
+Nov 22 12:52:15 e54f726edf6d systemd[1]: cloud-application.service: Failed with result 'exit-code'.
+Nov 22 12:52:18 e54f726edf6d systemd[1]: cloud-application.service: Scheduled restart job, restart counter is at 1.
+Nov 22 12:52:18 e54f726edf6d systemd[1]: Started cloud-application.service - Cloud Application FastAPI Service.
+Nov 22 12:52:18 e54f726edf6d python[2444]: Traceback (most recent call last):
+Nov 22 12:52:18 e54f726edf6d python[2444]:   File "/opt/cloud-application/app/run.py", line 5, in <module>
+Nov 22 12:52:18 e54f726edf6d python[2444]:     from app.config import settings
+Nov 22 12:52:18 e54f726edf6d python[2444]:   File "/opt/cloud-application/app/app/config.py", line 70, in <module>
+Nov 22 12:52:18 e54f726edf6d python[2444]:     settings = Settings()
+Nov 22 12:52:18 e54f726edf6d python[2444]:                ^^^^^^^^^^
+Nov 22 12:52:18 e54f726edf6d python[2444]:   File "/opt/cloud-application/venv/lib/python3.12/site-packages/pydantic_settings/main.py", line 292, in __init__
+Nov 22 12:52:18 e54f726edf6d python[2444]:     super().__init__(**__pydantic_self__.__class__._settings_build_values(sources, init_kwargs))
+Nov 22 12:52:18 e54f726edf6d python[2444]:   File "/opt/cloud-application/venv/lib/python3.12/site-packages/pydantic/main.py", line 280, in __init__
+Nov 22 12:52:18 e54f726edf6d python[2444]:     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+Nov 22 12:52:18 e54f726edf6d python[2444]:                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Nov 22 12:52:18 e54f726edf6d python[2444]: pydantic_core._pydantic_core.ValidationError: 1 validation error for Settings
+Nov 22 12:52:18 e54f726edf6d python[2444]: app_port
+Nov 22 12:52:18 e54f726edf6d python[2444]:   Input should be a valid integer, unable to parse string as an integer [type=int_parsing, input_value='not-a-number', input_type=str]
+Nov 22 12:52:18 e54f726edf6d python[2444]:     For further information visit https://errors.pydantic.dev/2.14/v/int_parsing
+Nov 22 12:52:18 e54f726edf6d systemd[1]: cloud-application.service: Main process exited, code=exited, status=1/FAILURE
+Nov 22 12:52:18 e54f726edf6d systemd[1]: cloud-application.service: Failed with result 'exit-code'.
+[exit=0]
+
+$ systemctl stop cloud-application.service
+[exit=0]
+
+$ cp /etc/cloud-application/cloud-application.env.bak /etc/cloud-application/cloud-application.env
+[exit=0]
+
+$ grep '^APP_PORT=' /etc/cloud-application/cloud-application.env
+APP_PORT=8000
+[exit=0]
+
+$ systemctl start cloud-application.service
+[exit=0]
+
+$ systemctl is-active cloud-application.service
+active
+[exit=0]
+
+$ curl -i http://127.0.0.1:8000/status
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   105  100   105    0     0   9756      0 --:--:-- --:--:-- --:--:-- 10500
+HTTP/1.1 200 OK
+date: Sun, 22 Nov 2026 12:52:22 GMT
+server: uvicorn
+content-length: 105
+content-type: application/json
+x-request-id: 3afce426011349eda5d653ba64a64f70
+
+{"status":"ok","service":"CloudApplication","environment":"production","debug":false,"api_prefix":"/api"}[exit=0]
+
+$ rm /etc/cloud-application/cloud-application.env.bak
+[exit=0]
+
+
+========== 12. Самостоятельная проверка перезапуска ==========
+
+$ systemctl restart cloud-application.service
+[exit=0]
+
+PID до restart: 2452
+PID после restart: 2461
+
+$ systemctl is-active cloud-application.service
+active
+[exit=0]
+
+$ curl -s http://127.0.0.1:8000/status
+{"status":"ok","service":"CloudApplication","environment":"production","debug":false,"api_prefix":"/api"}[exit=0]
+
+
+========== 13. Итоговый паспорт работающей среды ==========
+hostname: e54f726edf6d
+ОС: Ubuntu 24.04.5 LTS
+Python venv: Python 3.12.3
+commit hash: 665e168195fe9c7d0976f2dcd18920d8ee21cc7c
+пользователь процесса: cloudapp
+systemd unit: cloud-application.service
+ActiveState: active
+Unit enabled: enabled
+MainPID: 2461
+bind address: 127.0.0.1
+port: 8000
+/status: 200
+/docs: 200
+место конфигурации: /etc/cloud-application/cloud-application.env
+место секретов: /etc/cloud-application/secrets (symlink: /opt/cloud-application/app/secrets)
+место журналов: systemd journal
+
+Все шаги ЛР 36 выполнены.

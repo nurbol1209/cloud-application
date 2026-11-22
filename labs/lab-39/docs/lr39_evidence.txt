@@ -1,0 +1,692 @@
+
+
+========== 1. –°—Ä–µ–¥–∞ –∏ —Å–µ—Ç–µ–≤—ã–µ –∏–Ω—Ç–µ—Ä—Ñ–µ–π—Å—ã ==========
+
+$ hostname
+DESKTOP-3FUHFLF
+[exit=0]
+
+$ dk version
+Client:
+ Version:           29.9.3
+ API version:       1.56
+ Go version:        go1.26.10
+ Git commit:        5457199
+ Built:             Tue Nov  3 21:46:10 2026
+ OS/Arch:           windows/amd64
+ Context:           desktop-linux
+
+Server: Docker Desktop 4.99.0 (245822)
+ Engine:
+  Version:          29.9.3
+  API version:      1.56 (minimum version 1.40)
+  Go version:       go1.26.10
+  Git commit:       70efc0e
+  Built:            Tue Nov  3 21:41:42 2026
+  OS/Arch:          linux/amd64
+  Experimental:     false
+ containerd:
+  Version:          v2.4.2
+  GitCommit:        b7a25261e029d68978bbf290df0a62fc819b3c51
+ runc:
+  Version:          1.5.2
+  GitCommit:        v1.5.2-0-g29dd3dc2
+ docker-init:
+  Version:          0.19.0
+  GitCommit:        de40ad0
+[exit=0]
+
+$ powershell: Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike '127.*' } | Select-Object InterfaceAlias,IPAddress,PrefixLength | Format-Table -AutoSize
+
+InterfaceAlias                     IPAddress       PrefixLength
+--------------                     ---------       ------------
+ZeroTier One [ebe7fbd4456704a9]    172.27.170.85             16
+vEthernet (WSL (Hyper-V firewall)) 172.18.112.1              20
+Å•·Ø‡Æ¢Æ§≠†Ô ·•‚Ï 2                192.168.0.10              24
+èÆ§™´ÓÁ•≠®• ØÆ ´Æ™†´Ï≠Æ© ·•‚®* 2   169.254.221.23            16
+ë•‚•¢Æ• ØÆ§™´ÓÁ•≠®• Bluetooth      169.254.188.105           16
+èÆ§™´ÓÁ•≠®• ØÆ ´Æ™†´Ï≠Æ© ·•‚®* 1   169.254.244.106           16
+Ethernet                           10.10.1.61                22
+
+
+[exit=0]
+
+LAB_IP (–∞–¥—Ä–µ—Å —Å–µ—Ç–µ–≤–æ–≥–æ –∏–Ω—Ç–µ—Ä—Ñ–µ–π—Å–∞ Windows): 192.168.0.10
+
+$ ipconfig
+
+ç†·‚‡Æ©™† Ø‡Æ‚Æ™Æ´† IP §´Ô Windows
+
+
+Ä§†Ø‚•‡ Ethernet vEthernet (WSL (Hyper-V firewall)):
+
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : 
+   ãÆ™†´Ï≠Î© IPv6-†§‡•· ™†≠†´† . . . : fe80::7c5c:6c4b:7e9d:bd69%41
+   IPv4-†§‡•·. . . . . . . . . . . . : 172.18.112.1
+   å†·™† ØÆ§·•‚® . . . . . . . . . . : 255.255.240.0
+   é·≠Æ¢≠Æ© Ë´Óß. . . . . . . . . : 
+
+Ä§†Ø‚•‡ Ethernet Ethernet:
+
+   ëÆ·‚ÆÔ≠®• ·‡•§Î. . . . . . . . : ë‡•§† Ø•‡•§†Á® ≠•§Æ·‚„Ø≠†.
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : kpvk.loc
+
+Ä§†Ø‚•‡ °•·Ø‡Æ¢Æ§≠Æ© ´Æ™†´Ï≠Æ© ·•‚® èÆ§™´ÓÁ•≠®• ØÆ ´Æ™†´Ï≠Æ© ·•‚®* 1:
+
+   ëÆ·‚ÆÔ≠®• ·‡•§Î. . . . . . . . : ë‡•§† Ø•‡•§†Á® ≠•§Æ·‚„Ø≠†.
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : 
+
+Ä§†Ø‚•‡ °•·Ø‡Æ¢Æ§≠Æ© ´Æ™†´Ï≠Æ© ·•‚® èÆ§™´ÓÁ•≠®• ØÆ ´Æ™†´Ï≠Æ© ·•‚®* 2:
+
+   ëÆ·‚ÆÔ≠®• ·‡•§Î. . . . . . . . : ë‡•§† Ø•‡•§†Á® ≠•§Æ·‚„Ø≠†.
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : 
+
+Ä§†Ø‚•‡ Ethernet ZeroTier One [ebe7fbd4456704a9]:
+
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : 
+   ãÆ™†´Ï≠Î© IPv6-†§‡•· ™†≠†´† . . . : fe80::7062:a6d6:50ad:48b2%9
+   IPv4-†§‡•·. . . . . . . . . . . . : 172.27.170.85
+   å†·™† ØÆ§·•‚® . . . . . . . . . . : 255.255.0.0
+   é·≠Æ¢≠Æ© Ë´Óß. . . . . . . . . : 25.255.255.254
+
+Ä§†Ø‚•‡ °•·Ø‡Æ¢Æ§≠Æ© ´Æ™†´Ï≠Æ© ·•‚® Å•·Ø‡Æ¢Æ§≠†Ô ·•‚Ï 2:
+
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : Beeline
+   ãÆ™†´Ï≠Î© IPv6-†§‡•· ™†≠†´† . . . : fe80::3db6:aade:7375:9651%18
+   IPv4-†§‡•·. . . . . . . . . . . . : 192.168.0.10
+   å†·™† ØÆ§·•‚® . . . . . . . . . . : 255.255.255.0
+   é·≠Æ¢≠Æ© Ë´Óß. . . . . . . . . : 192.168.0.1
+
+Ä§†Ø‚•‡ Ethernet ë•‚•¢Æ• ØÆ§™´ÓÁ•≠®• Bluetooth:
+
+   ëÆ·‚ÆÔ≠®• ·‡•§Î. . . . . . . . : ë‡•§† Ø•‡•§†Á® ≠•§Æ·‚„Ø≠†.
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : 
+
+í„≠≠•´Ï≠Î© †§†Ø‚•‡ Teredo Tunneling Pseudo-Interface:
+
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : 
+   IPv6-†§‡•·. . . . . . . . . . . . : 2001:0:14c9:d804:2496:65e5:a3c8:44d4
+   ãÆ™†´Ï≠Î© IPv6-†§‡•· ™†≠†´† . . . : fe80::2496:65e5:a3c8:44d4%12
+   é·≠Æ¢≠Æ© Ë´Óß. . . . . . . . . : ::
+[exit=0]
+
+–•–æ—Å—Ç –∏ —É—á–µ–±–Ω—ã–π —Å–µ—Ä–≤–∏—Å –Ω–∞—Ö–æ–¥—è—Ç—Å—è –≤ –æ–¥–Ω–æ–π –ø–æ–¥—Å–µ—Ç–∏; loopback 127.0.0.1 –Ω–µ –∏—Å–ø–æ–ª—å–∑—É–µ—Ç—Å—è –∫–∞–∫ –≤–Ω–µ—à–Ω–∏–π –∞–¥—Ä–µ—Å.
+
+
+========== 2. –°–æ—Å—Ç–æ—è–Ω–∏–µ Compose-—Å–∏—Å—Ç–µ–º—ã –¥–æ –∏–∑–º–µ–Ω–µ–Ω–∏—è bind ==========
+
+$ dk image inspect cloud-application:0.7 --format image={{.Id}}
+image=sha256:06857787dadf4732f87de9e2d43387d1edbcf48f947e47eb6b3ed015cf10dcd8
+[exit=0]
+
+$ dk stop cloud-application-lr37
+cloud-application-lr37
+[exit=0]
+
+$ dc down -v --remove-orphans
+ Container cloudapp-lr39-app-1 Stopping 
+ Container cloudapp-lr39-app-1 Stopped 
+ Container cloudapp-lr39-app-1 Removing 
+ Container cloudapp-lr39-app-1 Removed 
+ Container cloudapp-lr39-notification-1 Stopping 
+ Container cloudapp-lr39-migrate-1 Stopping 
+ Container cloudapp-lr39-migrate-1 Stopped 
+ Container cloudapp-lr39-migrate-1 Removing 
+ Container cloudapp-lr39-migrate-1 Removed 
+ Container cloudapp-lr39-db-1 Stopping 
+ Container cloudapp-lr39-db-1 Stopped 
+ Container cloudapp-lr39-db-1 Removing 
+ Container cloudapp-lr39-db-1 Removed 
+ Container cloudapp-lr39-notification-1 Stopped 
+ Container cloudapp-lr39-notification-1 Removing 
+ Container cloudapp-lr39-notification-1 Removed 
+ Network cloudapp-lr39_cloud-network Removing 
+ Volume cloudapp-lr39_postgres_data Removing 
+ Volume cloudapp-lr39_postgres_data Removed 
+ Network cloudapp-lr39_cloud-network Removed 
+[exit=0]
+
+$ dk ps -a --format table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}
+NAMES                    IMAGE                   STATUS                     PORTS
+cloud-application-lr37   cloud-application:0.7   Exited (0) 7 minutes ago   
+ticket-postgres          postgres:17             Up 23 seconds              0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+rabbitmq-learning        rabbitmq:4-management   Up 42 minutes              0.0.0.0:5672->5672/tcp, [::]:5672->5672/tcp, 0.0.0.0:15672->15672/tcp, [::]:15672->15672/tcp
+[exit=0]
+
+$ wc -c secrets/auth_secret secrets/lab_db_password
+43 secrets/auth_secret
+32 secrets/lab_db_password
+75 total
+[exit=0]
+
+$ cat .env
+APP_PUBLISH_IP=127.0.0.1
+[exit=0]
+
+$ dc config --quiet
+[exit=0]
+
+$ dc up -d
+ Volume cloudapp-lr39_postgres_data Creating 
+ Volume cloudapp-lr39_postgres_data Creating 
+ Network cloudapp-lr39_cloud-network Creating 
+ Network cloudapp-lr39_cloud-network Creating 
+ Volume cloudapp-lr39_postgres_data Created 
+ Volume cloudapp-lr39_postgres_data Created 
+ Network cloudapp-lr39_cloud-network Created 
+ Network cloudapp-lr39_cloud-network Created 
+ Container cloudapp-lr39-notification-1 Creating 
+ Container cloudapp-lr39-db-1 Creating 
+ Container cloudapp-lr39-notification-1 Created 
+ Container cloudapp-lr39-db-1 Created 
+ Container cloudapp-lr39-migrate-1 Creating 
+ Container cloudapp-lr39-migrate-1 Created 
+ Container cloudapp-lr39-app-1 Creating 
+ Container cloudapp-lr39-app-1 Created 
+ Container cloudapp-lr39-db-1 Starting 
+ Container cloudapp-lr39-notification-1 Starting 
+ Container cloudapp-lr39-notification-1 Started 
+ Container cloudapp-lr39-db-1 Started 
+ Container cloudapp-lr39-db-1 Waiting 
+ Container cloudapp-lr39-db-1 Healthy 
+ Container cloudapp-lr39-migrate-1 Starting 
+ Container cloudapp-lr39-migrate-1 Started 
+ Container cloudapp-lr39-migrate-1 Waiting 
+ Container cloudapp-lr39-migrate-1 Exited 
+ Container cloudapp-lr39-app-1 Starting 
+ Container cloudapp-lr39-app-1 Started 
+[exit=0]
+
+$ dc ps
+NAME                           IMAGE                   COMMAND                  SERVICE        CREATED          STATUS                           PORTS
+cloudapp-lr39-app-1            cloud-application:0.7   "python run.py"          app            10 seconds ago   Up 1 second (health: starting)   127.0.0.1:8080->8000/tcp
+cloudapp-lr39-db-1             postgres:18             "docker-entrypoint.s‚Ä¶"   db             11 seconds ago   Up 9 seconds (healthy)           5432/tcp
+cloudapp-lr39-notification-1   cloud-application:0.7   "python -m uvicorn a‚Ä¶"   notification   11 seconds ago   Up 9 seconds                     8000/tcp
+[exit=0]
+
+$ dc port app 8000
+127.0.0.1:8080
+[exit=0]
+
+$ dc port db 5432
+:0
+[exit=0]
+
+$ dc port notification 9000
+no port 9000/tcp for container cloudapp-lr39-notification-1: 8000/tcp
+[exit=1]
+
+$ powershell: Get-NetTCPConnection -State Listen -LocalPort 8080 -ErrorAction SilentlyContinue | Select-Object LocalAddress,LocalPort,OwningProcess | Format-Table -AutoSize
+
+LocalAddress LocalPort OwningProcess
+------------ --------- -------------
+127.0.0.1         8080         15116
+
+
+[exit=0]
+
+$ curl --noproxy * -s -o /dev/null -w %{http_code}\n http://127.0.0.1:8080/status
+200
+[exit=0]
+
+$ curl --noproxy * -s -o /dev/null -w %{http_code}\n http://127.0.0.1:8080/docs
+200
+[exit=0]
+
+
+========== 3. –ò—Å—Ö–æ–¥–Ω–∞—è –ø—Ä–æ–≤–µ—Ä–∫–∞ TCP-–¥–æ—Å—Ç—É–ø–∞ —Å –∫–ª–∏–µ–Ω—Ç—Å–∫–æ–≥–æ –∞–¥—Ä–µ—Å–∞ ==========
+
+$ powershell: Test-NetConnection -ComputerName 192.168.0.10 -Port 8080 -InformationLevel Quiet
+èêÖÑìèêÖÜÑÖçàÖ: TCP connect to (192.168.0.10 : 8080) failed
+False
+[exit=0]
+
+$ curl --noproxy * --max-time 5 -sS http://192.168.0.10:8080/status
+curl: (7) Failed to connect to 192.168.0.10:8080 after 2033 ms: Could not connect to server
+[exit=7]
+
+–í—ã–≤–æ–¥: –ø—Ä–æ—Ü–µ—Å—Å –∏ healthcheck —Ä–∞–±–æ—Ç–∞—é—Ç –ª–æ–∫–∞–ª—å–Ω–æ, –Ω–æ loopback-–ø—É–±–ª–∏–∫–∞—Ü–∏—è –Ω–µ–¥–æ—Å—Ç—É–ø–Ω–∞ –ø–æ —Å–µ—Ç–µ–≤–æ–º—É –∞–¥—Ä–µ—Å—É.
+
+
+========== 4. –ò–∑–º–µ–Ω–µ–Ω–∏–µ –ø—É–±–ª–∏–∫–∞—Ü–∏–∏ –Ω–∞ —Å–µ—Ç–µ–≤–æ–π –∏–Ω—Ç–µ—Ä—Ñ–µ–π—Å ==========
+
+$ cat .env
+APP_PUBLISH_IP=192.168.0.10
+[exit=0]
+
+$ dc config --quiet
+[exit=0]
+
+$ dc up -d --force-recreate app
+ Container cloudapp-lr39-notification-1 Running 
+ Container cloudapp-lr39-db-1 Running 
+ Container cloudapp-lr39-app-1 Recreate 
+ Container cloudapp-lr39-app-1 Recreated 
+ Container cloudapp-lr39-db-1 Waiting 
+ Container cloudapp-lr39-db-1 Healthy 
+ Container cloudapp-lr39-migrate-1 Starting 
+ Container cloudapp-lr39-migrate-1 Started 
+ Container cloudapp-lr39-migrate-1 Waiting 
+ Container cloudapp-lr39-migrate-1 Exited 
+ Container cloudapp-lr39-app-1 Starting 
+ Container cloudapp-lr39-app-1 Started 
+[exit=0]
+
+$ dc ps
+NAME                           IMAGE                   COMMAND                  SERVICE        CREATED          STATUS                           PORTS
+cloudapp-lr39-app-1            cloud-application:0.7   "python run.py"          app            4 seconds ago    Up 1 second (health: starting)   192.168.0.10:8080->8000/tcp
+cloudapp-lr39-db-1             postgres:18             "docker-entrypoint.s‚Ä¶"   db             23 seconds ago   Up 22 seconds (healthy)          5432/tcp
+cloudapp-lr39-notification-1   cloud-application:0.7   "python -m uvicorn a‚Ä¶"   notification   23 seconds ago   Up 22 seconds                    8000/tcp
+[exit=0]
+
+$ dc port app 8000
+192.168.0.10:8080
+[exit=0]
+
+$ powershell: Get-NetTCPConnection -State Listen -LocalPort 8080 -ErrorAction SilentlyContinue | Select-Object LocalAddress,LocalPort,OwningProcess | Format-Table -AutoSize
+
+LocalAddress LocalPort OwningProcess
+------------ --------- -------------
+192.168.0.10      8080         15116
+
+
+[exit=0]
+
+$ curl --noproxy * --max-time 5 -s -o /dev/null -w local=127.0.0.1 status=%{http_code}\n http://127.0.0.1:8080/status
+local=127.0.0.1 status=000
+[exit=7]
+
+$ curl --noproxy * --max-time 5 -i http://192.168.0.10:8080/status
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100    105 100    105   0      0  25811      0                              0100    105 100    105   0      0  25442      0                              0100    105 100    105   0      0  25167      0                              0
+HTTP/1.1 200 OK
+date: Sun, 22 Nov 2026 13:08:41 GMT
+server: uvicorn
+content-length: 105
+content-type: application/json
+x-request-id: 5d2345d4d60c42dd9a691c17979fc2d9
+
+{"status":"ok","service":"CloudApplication","environment":"production","debug":false,"api_prefix":"/api"}[exit=0]
+
+$ curl --noproxy * --max-time 5 -s -o /dev/null -w %{http_code}\n http://192.168.0.10:8080/docs
+200
+[exit=0]
+
+
+========== 5. –ü—Ä–æ–≤–µ—Ä–∫–∞ —Å –∫–ª–∏–µ–Ω—Ç—Å–∫–æ–≥–æ –∫–æ–º–ø—å—é—Ç–µ—Ä–∞ ==========
+
+$ powershell: Test-NetConnection -ComputerName 192.168.0.10 -Port 8080
+
+
+ComputerName     : 192.168.0.10
+RemoteAddress    : 192.168.0.10
+RemotePort       : 8080
+InterfaceAlias   : Å•·Ø‡Æ¢Æ§≠†Ô ·•‚Ï 2
+SourceAddress    : 192.168.0.10
+TcpTestSucceeded : True
+
+
+
+[exit=0]
+
+$ powershell: curl.exe --noproxy "*" -i http://192.168.0.10:8080/status
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100    105 100    105   0      0  27515      0                              0100    105 100    105   0      0  24934      0                              0100    105 100    105   0      0  24266      0                              0
+HTTP/1.1 200 OK
+date: Sun, 22 Nov 2026 13:08:48 GMT
+server: uvicorn
+content-length: 105
+content-type: application/json
+x-request-id: 5fecaf5a193645518fddab46eb30300b
+
+{"status":"ok","service":"CloudApplication","environment":"production","debug":false,"api_prefix":"/api"}[exit=0]
+
+$ powershell: Invoke-WebRequest -UseBasicParsing -Uri http://192.168.0.10:8080/docs | Select-Object StatusCode | Format-Table -AutoSize
+
+StatusCode
+----------
+       200
+
+
+[exit=0]
+
+
+========== 6. –ò–Ω—Ñ—Ä–∞—Å—Ç—Ä—É–∫—Ç—É—Ä–Ω—ã–µ –ø–æ—Ä—Ç—ã –Ω–µ –æ–ø—É–±–ª–∏–∫–æ–≤–∞–Ω—ã ==========
+
+$ dk inspect cloudapp-lr39-db-1 --format {{json .NetworkSettings.Ports}}
+{"5432/tcp":null}
+[exit=0]
+
+$ dk inspect cloudapp-lr39-notification-1 --format {{json .NetworkSettings.Ports}}
+{"8000/tcp":null}
+[exit=0]
+
+$ dc port db 5432
+:0
+[exit=0]
+
+$ dc port notification 9000
+no port 9000/tcp for container cloudapp-lr39-notification-1: 8000/tcp
+[exit=1]
+
+$ curl --noproxy * --max-time 5 -sS http://192.168.0.10:9000/status
+curl: (7) Failed to connect to 192.168.0.10:9000 after 2044 ms: Could not connect to server
+[exit=7]
+
+$ dc ps --format table {{.Service}}\t{{.Status}}\t{{.Ports}}
+SERVICE        STATUS                    PORTS
+app            Up 15 seconds (healthy)   192.168.0.10:8080->8000/tcp
+db             Up 35 seconds (healthy)   5432/tcp
+notification   Up 35 seconds             8000/tcp
+[exit=0]
+
+–ü—Ä–∏–º–µ—á–∞–Ω–∏–µ: –ø–æ—Ä—Ç 5432 –Ω–∞ host –∑–∞–Ω—è—Ç –ø–æ—Å—Ç–æ—Ä–æ–Ω–Ω–∏–º –∫–æ–Ω—Ç–µ–π–Ω–µ—Ä–æ–º ticket-postgres.
+
+$ dk stop ticket-postgres
+ticket-postgres
+[exit=0]
+
+$ powershell: Test-NetConnection -ComputerName 192.168.0.10 -Port 5432 -InformationLevel Quiet
+èêÖÑìèêÖÜÑÖçàÖ: TCP connect to (192.168.0.10 : 5432) failed
+False
+[exit=0]
+
+$ curl --noproxy * --max-time 5 -sS http://192.168.0.10:5432/
+curl: (7) Failed to connect to 192.168.0.10:5432 after 2049 ms: Could not connect to server
+[exit=7]
+
+$ dk start ticket-postgres
+ticket-postgres
+[exit=0]
+–ü–æ—Å—Ç–æ—Ä–æ–Ω–Ω–∏–π –∫–æ–Ω—Ç–µ–π–Ω–µ—Ä ticket-postgres –≤–æ–∑–≤—Ä–∞—â—ë–Ω –≤ running.
+
+
+========== 7. –í–Ω—É—Ç—Ä–µ–Ω–Ω—è—è —Å–µ—Ç—å Compose ==========
+
+$ dc exec -T app python -c import socket; print('db', socket.gethostbyname('db')); print('notification', socket.gethostbyname('notification'))
+db 172.18.0.3
+notification 172.18.0.2
+[exit=0]
+
+$ dc exec -T app python -c import socket; s=socket.create_connection(('db',5432),3); print('db:5432 reachable'); s.close()
+db:5432 reachable
+[exit=0]
+
+$ dc exec -T app python -c import httpx; print(httpx.get('http://notification:9000/status', timeout=5).json())
+{'service': 'notification', 'status': 'running'}
+[exit=0]
+
+
+========== 8. –ü–æ—Å–ª–µ–¥–æ–≤–∞—Ç–µ–ª—å–Ω–∞—è –¥–∏–∞–≥–Ω–æ—Å—Ç–∏–∫–∞: —É—Ä–æ–≤–Ω–∏ 1-6 ==========
+
+--- –£—Ä–æ–≤–µ–Ω—å 1. –ö–ª–∏–µ–Ω—Ç ---
+
+$ powershell: Test-NetConnection -ComputerName 192.168.0.10 -Port 8080 -InformationLevel Quiet
+True
+[exit=0]
+
+--- –£—Ä–æ–≤–µ–Ω—å 2. –°–µ—Ç–µ–≤–æ–π –∏–Ω—Ç–µ—Ä—Ñ–µ–π—Å ---
+
+$ powershell: Get-NetIPAddress -IPAddress 192.168.0.10 | Select-Object InterfaceAlias,IPAddress,PrefixLength | Format-Table -AutoSize
+
+InterfaceAlias      IPAddress    PrefixLength
+--------------      ---------    ------------
+Å•·Ø‡Æ¢Æ§≠†Ô ·•‚Ï 2 192.168.0.10           24
+
+
+[exit=0]
+
+$ ipconfig
+
+ç†·‚‡Æ©™† Ø‡Æ‚Æ™Æ´† IP §´Ô Windows
+
+
+Ä§†Ø‚•‡ Ethernet vEthernet (WSL (Hyper-V firewall)):
+
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : 
+   ãÆ™†´Ï≠Î© IPv6-†§‡•· ™†≠†´† . . . : fe80::7c5c:6c4b:7e9d:bd69%41
+   IPv4-†§‡•·. . . . . . . . . . . . : 172.18.112.1
+   å†·™† ØÆ§·•‚® . . . . . . . . . . : 255.255.240.0
+   é·≠Æ¢≠Æ© Ë´Óß. . . . . . . . . : 
+
+Ä§†Ø‚•‡ Ethernet Ethernet:
+
+   ëÆ·‚ÆÔ≠®• ·‡•§Î. . . . . . . . : ë‡•§† Ø•‡•§†Á® ≠•§Æ·‚„Ø≠†.
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : kpvk.loc
+
+Ä§†Ø‚•‡ °•·Ø‡Æ¢Æ§≠Æ© ´Æ™†´Ï≠Æ© ·•‚® èÆ§™´ÓÁ•≠®• ØÆ ´Æ™†´Ï≠Æ© ·•‚®* 1:
+
+   ëÆ·‚ÆÔ≠®• ·‡•§Î. . . . . . . . : ë‡•§† Ø•‡•§†Á® ≠•§Æ·‚„Ø≠†.
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : 
+
+Ä§†Ø‚•‡ °•·Ø‡Æ¢Æ§≠Æ© ´Æ™†´Ï≠Æ© ·•‚® èÆ§™´ÓÁ•≠®• ØÆ ´Æ™†´Ï≠Æ© ·•‚®* 2:
+
+   ëÆ·‚ÆÔ≠®• ·‡•§Î. . . . . . . . : ë‡•§† Ø•‡•§†Á® ≠•§Æ·‚„Ø≠†.
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : 
+
+Ä§†Ø‚•‡ Ethernet ZeroTier One [ebe7fbd4456704a9]:
+
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : 
+   ãÆ™†´Ï≠Î© IPv6-†§‡•· ™†≠†´† . . . : fe80::7062:a6d6:50ad:48b2%9
+   IPv4-†§‡•·. . . . . . . . . . . . : 172.27.170.85
+   å†·™† ØÆ§·•‚® . . . . . . . . . . : 255.255.0.0
+   é·≠Æ¢≠Æ© Ë´Óß. . . . . . . . . : 25.255.255.254
+
+Ä§†Ø‚•‡ °•·Ø‡Æ¢Æ§≠Æ© ´Æ™†´Ï≠Æ© ·•‚® Å•·Ø‡Æ¢Æ§≠†Ô ·•‚Ï 2:
+
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : Beeline
+   ãÆ™†´Ï≠Î© IPv6-†§‡•· ™†≠†´† . . . : fe80::3db6:aade:7375:9651%18
+   IPv4-†§‡•·. . . . . . . . . . . . : 192.168.0.10
+   å†·™† ØÆ§·•‚® . . . . . . . . . . : 255.255.255.0
+   é·≠Æ¢≠Æ© Ë´Óß. . . . . . . . . : 192.168.0.1
+
+Ä§†Ø‚•‡ Ethernet ë•‚•¢Æ• ØÆ§™´ÓÁ•≠®• Bluetooth:
+
+   ëÆ·‚ÆÔ≠®• ·‡•§Î. . . . . . . . : ë‡•§† Ø•‡•§†Á® ≠•§Æ·‚„Ø≠†.
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : 
+
+í„≠≠•´Ï≠Î© †§†Ø‚•‡ Teredo Tunneling Pseudo-Interface:
+
+   DNS-·„‰‰®™· ØÆ§™´ÓÁ•≠®Ô . . . . . : 
+   IPv6-†§‡•·. . . . . . . . . . . . : 2001:0:14c9:d804:2496:65e5:a3c8:44d4
+   ãÆ™†´Ï≠Î© IPv6-†§‡•· ™†≠†´† . . . : fe80::2496:65e5:a3c8:44d4%12
+   é·≠Æ¢≠Æ© Ë´Óß. . . . . . . . . : ::
+[exit=0]
+
+--- –£—Ä–æ–≤–µ–Ω—å 3. –ü—Ä–æ—Å–ª—É—à–∏–≤–∞–µ–º—ã–π host-–ø–æ—Ä—Ç ---
+
+$ powershell: Get-NetTCPConnection -State Listen -LocalPort 8080 -ErrorAction SilentlyContinue | Select-Object LocalAddress,LocalPort,OwningProcess | Format-Table -AutoSize
+
+LocalAddress LocalPort OwningProcess
+------------ --------- -------------
+192.168.0.10      8080         15116
+
+
+[exit=0]
+
+--- –£—Ä–æ–≤–µ–Ω—å 4. Docker port mapping ---
+
+$ dc port app 8000
+192.168.0.10:8080
+[exit=0]
+
+$ dc ps app
+NAME                  IMAGE                   COMMAND           SERVICE   CREATED          STATUS                    PORTS
+cloudapp-lr39-app-1   cloud-application:0.7   "python run.py"   app       32 seconds ago   Up 29 seconds (healthy)   192.168.0.10:8080->8000/tcp
+[exit=0]
+
+--- –£—Ä–æ–≤–µ–Ω—å 5. –°–æ—Å—Ç–æ—è–Ω–∏–µ –∫–æ–Ω—Ç–µ–π–Ω–µ—Ä–∞ –∏ –∂—É—Ä–Ω–∞–ª ---
+
+$ dc ps
+NAME                           IMAGE                   COMMAND                  SERVICE        CREATED          STATUS                    PORTS
+cloudapp-lr39-app-1            cloud-application:0.7   "python run.py"          app            32 seconds ago   Up 29 seconds (healthy)   192.168.0.10:8080->8000/tcp
+cloudapp-lr39-db-1             postgres:18             "docker-entrypoint.s‚Ä¶"   db             51 seconds ago   Up 50 seconds (healthy)   5432/tcp
+cloudapp-lr39-notification-1   cloud-application:0.7   "python -m uvicorn a‚Ä¶"   notification   51 seconds ago   Up 50 seconds             8000/tcp
+[exit=0]
+
+$ dc logs --tail 30 app
+app-1  | {"timestamp": "2026-11-22T13:08:39.288226+00:00", "level": "INFO", "logger": "app.main", "message": "Cloud Application configured", "request_id": "-", "service": "cloud-application", "event": "application_configured"}
+app-1  | INFO:     Started server process [1]
+app-1  | INFO:     Waiting for application startup.
+app-1  | INFO:     Application startup complete.
+app-1  | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+app-1  | {"timestamp": "2026-11-22T13:08:39.517396+00:00", "level": "INFO", "logger": "app.middleware.request_logging", "message": "HTTP request completed", "request_id": "a70b983c5b6644d1b7f300bc76473500", "service": "cloud-application", "event": "http_request_completed", "method": "GET", "path": "/status", "status_code": 200, "duration_ms": 1.84}
+app-1  | INFO:     172.18.0.1:51946 - "GET /status HTTP/1.1" 200 OK
+app-1  | {"timestamp": "2026-11-22T13:08:41.365014+00:00", "level": "INFO", "logger": "app.middleware.request_logging", "message": "HTTP request completed", "request_id": "5d2345d4d60c42dd9a691c17979fc2d9", "service": "cloud-application", "event": "http_request_completed", "method": "GET", "path": "/status", "status_code": 200, "duration_ms": 0.87}
+app-1  | INFO:     172.18.0.1:51954 - "GET /status HTTP/1.1" 200 OK
+app-1  | {"timestamp": "2026-11-22T13:08:41.404074+00:00", "level": "INFO", "logger": "app.middleware.request_logging", "message": "HTTP request completed", "request_id": "a6a62274c11648f4aaea7874697c9896", "service": "cloud-application", "event": "http_request_completed", "method": "GET", "path": "/docs", "status_code": 200, "duration_ms": 0.2}
+app-1  | INFO:     172.18.0.1:51966 - "GET /docs HTTP/1.1" 200 OK
+app-1  | {"timestamp": "2026-11-22T13:08:43.504088+00:00", "level": "INFO", "logger": "app.middleware.request_logging", "message": "HTTP request completed", "request_id": "92dd404c82a643c3b0ca592e27c80877", "service": "cloud-application", "event": "http_request_completed", "method": "GET", "path": "/status", "status_code": 200, "duration_ms": 0.66}
+app-1  | INFO:     127.0.0.1:37242 - "GET /status HTTP/1.1" 200 OK
+app-1  | {"timestamp": "2026-11-22T13:08:48.736589+00:00", "level": "INFO", "logger": "app.middleware.request_logging", "message": "HTTP request completed", "request_id": "068377b82b194d79a083783f1d65cb6a", "service": "cloud-application", "event": "http_request_completed", "method": "GET", "path": "/status", "status_code": 200, "duration_ms": 0.63}
+app-1  | INFO:     127.0.0.1:37256 - "GET /status HTTP/1.1" 200 OK
+app-1  | {"timestamp": "2026-11-22T13:08:49.301621+00:00", "level": "INFO", "logger": "app.middleware.request_logging", "message": "HTTP request completed", "request_id": "5fecaf5a193645518fddab46eb30300b", "service": "cloud-application", "event": "http_request_completed", "method": "GET", "path": "/status", "status_code": 200, "duration_ms": 0.61}
+app-1  | INFO:     172.18.0.1:56170 - "GET /status HTTP/1.1" 200 OK
+app-1  | {"timestamp": "2026-11-22T13:08:49.737510+00:00", "level": "INFO", "logger": "app.middleware.request_logging", "message": "HTTP request completed", "request_id": "8969a5f630eb4c2ebe2b017789c0cef2", "service": "cloud-application", "event": "http_request_completed", "method": "GET", "path": "/docs", "status_code": 200, "duration_ms": 0.27}
+app-1  | INFO:     172.18.0.1:56176 - "GET /docs HTTP/1.1" 200 OK
+app-1  | {"timestamp": "2026-11-22T13:08:54.065719+00:00", "level": "INFO", "logger": "app.middleware.request_logging", "message": "HTTP request completed", "request_id": "365a2d322d2b49e1839bde6dcca9507d", "service": "cloud-application", "event": "http_request_completed", "method": "GET", "path": "/status", "status_code": 200, "duration_ms": 0.81}
+app-1  | INFO:     127.0.0.1:36246 - "GET /status HTTP/1.1" 200 OK
+app-1  | {"timestamp": "2026-11-22T13:08:59.330181+00:00", "level": "INFO", "logger": "app.middleware.request_logging", "message": "HTTP request completed", "request_id": "e54efa391ff54db9a1320d296553450f", "service": "cloud-application", "event": "http_request_completed", "method": "GET", "path": "/status", "status_code": 200, "duration_ms": 0.5}
+app-1  | INFO:     127.0.0.1:36250 - "GET /status HTTP/1.1" 200 OK
+app-1  | {"timestamp": "2026-11-22T13:09:04.570291+00:00", "level": "INFO", "logger": "app.middleware.request_logging", "message": "HTTP request completed", "request_id": "2529423f91f14c29ad27c9604b0b1df6", "service": "cloud-application", "event": "http_request_completed", "method": "GET", "path": "/status", "status_code": 200, "duration_ms": 0.67}
+app-1  | INFO:     127.0.0.1:56118 - "GET /status HTTP/1.1" 200 OK
+[exit=0]
+
+--- –£—Ä–æ–≤–µ–Ω—å 6. –ü—Ä–∏–ª–æ–∂–µ–Ω–∏–µ –∏–∑–Ω—É—Ç—Ä–∏ –∫–æ–Ω—Ç–µ–π–Ω–µ—Ä–∞ ---
+
+$ dc exec -T app python -c import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/status', timeout=3).read().decode())
+{"status":"ok","service":"CloudApplication","environment":"production","debug":false,"api_prefix":"/api"}
+[exit=0]
+
+
+========== 9. –ö–æ–Ω—Ç—Ä–æ–ª–∏—Ä—É–µ–º—ã–π –æ—Ç–∫–∞–∑: –≤–æ–∑–≤—Ä–∞—Ç bind –Ω–∞ loopback ==========
+
+$ dc up -d --force-recreate app
+ Container cloudapp-lr39-notification-1 Running 
+ Container cloudapp-lr39-db-1 Running 
+ Container cloudapp-lr39-app-1 Recreate 
+ Container cloudapp-lr39-app-1 Recreated 
+ Container cloudapp-lr39-db-1 Waiting 
+ Container cloudapp-lr39-db-1 Healthy 
+ Container cloudapp-lr39-migrate-1 Starting 
+ Container cloudapp-lr39-migrate-1 Started 
+ Container cloudapp-lr39-migrate-1 Waiting 
+ Container cloudapp-lr39-migrate-1 Exited 
+ Container cloudapp-lr39-app-1 Starting 
+ Container cloudapp-lr39-app-1 Started 
+[exit=0]
+
+$ dc ps app
+NAME                  IMAGE                   COMMAND           SERVICE   CREATED         STATUS                           PORTS
+cloudapp-lr39-app-1   cloud-application:0.7   "python run.py"   app       5 seconds ago   Up 1 second (health: starting)   127.0.0.1:8080->8000/tcp
+[exit=0]
+
+$ dc port app 8000
+127.0.0.1:8080
+[exit=0]
+
+$ curl --noproxy * -s -o /dev/null -w local status=%{http_code}\n http://127.0.0.1:8080/status
+local status=200
+[exit=0]
+
+$ powershell: Test-NetConnection -ComputerName 192.168.0.10 -Port 8080 -InformationLevel Quiet
+èêÖÑìèêÖÜÑÖçàÖ: TCP connect to (192.168.0.10 : 8080) failed
+False
+[exit=0]
+
+$ curl --noproxy * --max-time 5 -sS http://192.168.0.10:8080/status
+curl: (7) Failed to connect to 192.168.0.10:8080 after 2038 ms: Could not connect to server
+[exit=7]
+
+–ü—Ä–∏—á–∏–Ω–∞ –æ—Ç–∫–∞–∑–∞: host bind-address = 127.0.0.1; –∫–æ–Ω—Ç–µ–π–Ω–µ—Ä, healthcheck –∏ FastAPI –∏—Å–ø—Ä–∞–≤–Ω—ã.
+
+
+========== 10. –í–æ—Å—Å—Ç–∞–Ω–æ–≤–ª–µ–Ω–∏–µ —Ä–∞–±–æ—á–µ–≥–æ bind –∏ —Ñ–∏–Ω–∞–ª—å–Ω–∞—è –ø—Ä–æ–≤–µ—Ä–∫–∞ ==========
+
+$ cat .env
+APP_PUBLISH_IP=192.168.0.10
+[exit=0]
+
+$ dc up -d --force-recreate app
+ Container cloudapp-lr39-notification-1 Running 
+ Container cloudapp-lr39-db-1 Running 
+ Container cloudapp-lr39-app-1 Recreate 
+ Container cloudapp-lr39-app-1 Recreated 
+ Container cloudapp-lr39-db-1 Waiting 
+ Container cloudapp-lr39-db-1 Healthy 
+ Container cloudapp-lr39-migrate-1 Starting 
+ Container cloudapp-lr39-migrate-1 Started 
+ Container cloudapp-lr39-migrate-1 Waiting 
+ Container cloudapp-lr39-migrate-1 Exited 
+ Container cloudapp-lr39-app-1 Starting 
+ Container cloudapp-lr39-app-1 Started 
+[exit=0]
+
+$ dc ps
+NAME                           IMAGE                   COMMAND                  SERVICE        CREATED              STATUS                           PORTS
+cloudapp-lr39-app-1            cloud-application:0.7   "python run.py"          app            5 seconds ago        Up 1 second (health: starting)   192.168.0.10:8080->8000/tcp
+cloudapp-lr39-db-1             postgres:18             "docker-entrypoint.s‚Ä¶"   db             About a minute ago   Up About a minute (healthy)      5432/tcp
+cloudapp-lr39-notification-1   cloud-application:0.7   "python -m uvicorn a‚Ä¶"   notification   About a minute ago   Up About a minute                8000/tcp
+[exit=0]
+
+$ dc port app 8000
+192.168.0.10:8080
+[exit=0]
+
+$ powershell: Test-NetConnection -ComputerName 192.168.0.10 -Port 8080
+
+
+ComputerName     : 192.168.0.10
+RemoteAddress    : 192.168.0.10
+RemotePort       : 8080
+InterfaceAlias   : Å•·Ø‡Æ¢Æ§≠†Ô ·•‚Ï 2
+SourceAddress    : 192.168.0.10
+TcpTestSucceeded : True
+
+
+
+[exit=0]
+
+$ curl --noproxy * -i http://192.168.0.10:8080/status
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100    105 100    105   0      0  23563      0                              0100    105 100    105   0      0  23250      0                              0100    105 100    105   0      0  23011      0                              0
+HTTP/1.1 200 OK
+date: Sun, 22 Nov 2026 13:09:32 GMT
+server: uvicorn
+content-length: 105
+content-type: application/json
+x-request-id: 1f9a550cb3f040408bbd7ba5fc4d9e4e
+
+{"status":"ok","service":"CloudApplication","environment":"production","debug":false,"api_prefix":"/api"}[exit=0]
+
+$ curl --noproxy * -s -o /dev/null -w docs=%{http_code}\n http://192.168.0.10:8080/docs
+docs=200
+[exit=0]
+
+$ dk inspect cloudapp-lr39-db-1 --format db ports={{json .NetworkSettings.Ports}}
+db ports={"5432/tcp":null}
+[exit=0]
+
+$ powershell: Test-NetConnection -ComputerName 192.168.0.10 -Port 9000 -InformationLevel Quiet
+èêÖÑìèêÖÜÑÖçàÖ: TCP connect to (192.168.0.10 : 9000) failed
+False
+[exit=0]
+
+
+========== 11. –≠–∫—Å–ø–ª—É–∞—Ç–∞—Ü–∏–æ–Ω–Ω—ã–π —Å–µ—Ç–µ–≤–æ–π –ø–∞—Å–ø–æ—Ä—Ç ==========
+hostname: DESKTOP-3FUHFLF
+Lab interface address: 192.168.0.10
+Subnet mask: 255.255.255.0 (/24)
+NAT interface: Windows host + Docker Desktop (Linux VM)
+External network path: Windows client -> 192.168.0.10:8080 -> Docker published port -> app:8000
+Compose project: cloudapp-lr39
+app published: 192.168.0.10:8080
+db published: {"5432/tcp":null}
+notification published: {"8000/tcp":null}
+app /status: 200
+app /docs: 200
+
+–í—Å–µ —à–∞–≥–∏ –õ–† 39 –≤—ã–ø–æ–ª–Ω–µ–Ω—ã. –°—Ç–µ–∫ –æ—Å—Ç–∞–≤–ª–µ–Ω –∑–∞–ø—É—â–µ–Ω–Ω—ã–º –¥–ª—è –õ–† 40.

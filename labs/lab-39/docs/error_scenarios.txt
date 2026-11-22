@@ -1,0 +1,80 @@
+Лабораторная работа №30. Фактические результаты проверок
+Среда: Windows, Git Bash, Python 3.13.14, виртуальное окружение ../../.venv
+Docker отсутствует. Notification Service и основное приложение запущены
+локально: 127.0.0.1:9000 и 127.0.0.1:8000 (DB_BACKEND=sqlite).
+
+Исходные параметры:
+NOTIFICATION_SERVICE_URL=http://127.0.0.1:9000
+NOTIFICATION_TIMEOUT_SECONDS=2.0
+NOTIFICATION_MAX_ATTEMPTS=3
+NOTIFICATION_RETRY_DELAY_SECONDS=0.5
+
+== Сценарий A: сервис работает ==
+POST /integration/notifications (administrator)
+{"id":1,"recipient":"stable@cloud.local",
+ "message":"Network error handling enabled","status":"accepted"}
+HTTP 201
+
+== Сценарий B: notification остановлен ==
+POST /integration/notifications
+{"detail":"Notification service is unavailable"}
+HTTP 503, время ответа около 10,4 с
+
+Класс события: httpx.ConnectTimeout (на Windows подключение к закрытому
+порту не отклоняется мгновенно), ветка ConnectError/ConnectTimeout,
+3 попытки, задержки 0,5 с и 1,0 с.
+
+== Сценарий C: соединение устанавливается, ответа нет ==
+Вместо docker compose pause локально использован сокет-сервер,
+который принимает TCP-соединение и не отвечает (аналог замороженного
+контейнера; сетевой путь существует, приложение не обрабатывает запрос).
+POST /integration/notifications
+{"detail":"Notification service response timeout"}
+HTTP 504, время ответа около 3,0 с
+
+Класс события: httpx.ReadTimeout (TimeoutException), повтор не выполняется.
+
+== Сценарий D: сервис восстановлен ==
+POST /integration/notifications
+{"id":1,"recipient":"stable@cloud.local","message":"Recovered",
+ "status":"accepted"}
+HTTP 201
+
+== Ошибочный HTTP-ответ зависимого сервиса ==
+GET http://127.0.0.1:9000/test/error/503 -> 503, raise_for_status()
+  -> httpx.HTTPStatusError 503
+GET http://127.0.0.1:9000/test/error/400 -> 400, raise_for_status()
+  -> httpx.HTTPStatusError 400
+
+Проверка преобразования в 502: локальный заглушечный HTTP-сервер на
+127.0.0.1:9100 отвечает на POST кодом 500, приложение запущено с
+NOTIFICATION_SERVICE_URL=http://127.0.0.1:9100.
+POST /integration/notifications
+{"detail":"Notification service returned an invalid response"}
+HTTP 502
+
+== Изменение timeout ==
+NOTIFICATION_TIMEOUT_SECONDS=1.0, сервис не отвечает:
+HTTP 504, время ответа около 2,2 с (при 2,0 с — около 3,0 с)
+
+== Изменение числа попыток ==
+NOTIFICATION_MAX_ATTEMPTS=2, NOTIFICATION_RETRY_DELAY_SECONDS=0.25,
+notification недоступен:
+HTTP 503, время ответа около 6,4 с
+(при 3 попытках и 0,5 с — около 10,4 с)
+
+== Авторизация ==
+viewer: POST /integration/notifications -> 403
+  {"detail":"Insufficient permissions: services.write"}
+без токена -> 401 {"detail":"Authentication required"}
+
+== Восстановление исходных параметров ==
+NOTIFICATION_TIMEOUT_SECONDS=2.0
+NOTIFICATION_MAX_ATTEMPTS=3
+NOTIFICATION_RETRY_DELAY_SECONDS=0.5
+Повторный запрос -> HTTP 201, status=accepted.
+
+Примечание: в Git Bash переменная NO_PROXY содержит шаблон "[::1]",
+который httpx 0.28.1 разбирает как некорректный порт. Проверочные
+процессы запускались с env -u NO_PROXY; в контейнерах Docker эта
+переменная не задана, изменений в код приложения не вносилось.

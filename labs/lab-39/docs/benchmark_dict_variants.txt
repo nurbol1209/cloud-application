@@ -1,0 +1,4 @@
+variant     mean       best       min-max
+id->name    0.006047  0.005108  0.005108-0.008022
+id->item    0.007561  0.006130  0.006130-0.011313
+means differ by 0.001513s
