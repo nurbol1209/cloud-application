@@ -8,11 +8,11 @@ permissions:
   contents: read
 
 jobs:
-  lab-34:
+  lab-39:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: labs/lab-34
+        working-directory: labs/lab-39
     steps:
       - uses: actions/checkout@v4
 

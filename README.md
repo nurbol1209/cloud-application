@@ -1,4 +1,4 @@
-# Cloud Application — лабораторные работы 1–34
+# Cloud Application — лабораторные работы 1–39
 
 Учебный сквозной проект по дисциплине «Управление работами и
 разработка программного обеспечения облачных систем».
@@ -7,12 +7,13 @@
 журналированием, статическим контролем качества и профилированием.
 
 Каждая папка `labs/lab-NN` — самостоятельный снимок проекта на момент
-соответствующей лабораторной работы. Последняя версия — `labs/lab-34`.
+соответствующей лабораторной работы. Последняя версия — `labs/lab-39`
+(ЛР 38 в комплекте заданий отсутствует, нумерация сохранена).
 
 ## Требования
 
 - Python 3.13+
-- Docker (для лабораторных 26–34; конфигурация проверяется и без него)
+- Docker (для лабораторных 26–39; конфигурация проверяется и без него)
 - Visual Studio Code с расширениями Python и Ruff
 - Git
 
@@ -25,8 +26,8 @@
    ```powershell
    python -m venv .venv
    .\.venv\Scripts\Activate.ps1
-   python -m pip install -r labs\lab-34\requirements.txt
-   python -m pip install -r labs\lab-34\requirements-dev.txt
+   python -m pip install -r labs\lab-39\requirements.txt
+   python -m pip install -r labs\lab-39\requirements-dev.txt
    ```
 
 3. Выберите интерпретатор `.venv` (`Ctrl+Shift+P` →
@@ -34,7 +35,7 @@
 4. Подготовьте локальные секреты и SQLite-базу в нужной лабораторной:
 
    ```powershell
-   cd labs\lab-34
+   cd labs\lab-39
    python scripts\init_secrets.py
    python scripts\init_db.py
    python scripts\init_access.py
@@ -52,7 +53,7 @@
 ## Проверка качества
 
 ```powershell
-cd labs\lab-34
+cd labs\lab-39
 .\scripts\check_quality.ps1
 ```
 
@@ -108,8 +109,18 @@ python scripts\benchmark_scaling.py
 | 32 | Отладка программного компонента | [lab-32](labs/lab-32/README.md) |
 | 33 | Статический анализ и стандартизация кода | [lab-33](labs/lab-33/README.md) |
 | 34 | Анализ и оптимизация программного компонента | [lab-34](labs/lab-34/README.md) |
+| 35 | Управление службами серверной ОС | [lab-35](labs/lab-35/README.md) |
+| 36 | Развертывание серверного приложения | [lab-36](labs/lab-36/README.md) |
+| 37 | Развертывание контейнеризированного приложения | [lab-37](labs/lab-37/README.md) |
+| 38 | В комплекте заданий отсутствует | — |
+| 39 | Настройка сетевого доступа к приложению | [lab-39](labs/lab-39/README.md) |
 
-## Структура проекта (lab-34)
+Для ЛР 39 полный отчёт оформлен в Word:
+[lr39_report.docx](labs/lab-39/docs/lr39_report.docx)
+(и [PDF-копия](labs/lab-39/docs/lr39_report.pdf)), свидетельства запуска —
+[lr39_evidence.txt](labs/lab-39/docs/lr39_evidence.txt).
+
+## Структура проекта (lab-39)
 
 ```text
 app/
@@ -124,7 +135,9 @@ app/
   middleware/                 request_id и журналирование
 migrations/                   Alembic
 scripts/                      инициализация, проверки, benchmark
-docs/                         свидетельства выполнения
+scripts/lr35 … lr39/          сценарии лабораторных 35–39
+deploy/                       внешние конфигурации и unit-файлы systemd
+docs/                         свидетельства выполнения, отчёт ЛР 39
 compose.yaml                  PostgreSQL + app + migrate + notification
 Dockerfile                    образ cloud-application:0.7
 pyproject.toml                конфигурация Ruff
@@ -132,15 +145,13 @@ pyproject.toml                конфигурация Ruff
 
 ## Публикация на GitHub
 
-Репозиторий ещё не привязан к удалённому. Один раз выполните:
+Репозиторий: <https://github.com/nurbol1209/cloud-application>.
 
 ```bash
-git remote add origin https://github.com/<USER>/<REPO>.git
-git branch -M main
-git push -u origin main
+git clone https://github.com/nurbol1209/cloud-application.git
 ```
 
-Дальше достаточно `git push`. В репозиторий не попадают `.env`,
+Дальше из рабочей копии достаточно `git add`, `git commit` и `git push`. В репозиторий не попадают `.env`,
 `secrets/*` (кроме README), `certs/*.pem`, базы `*.db`, профили
 `*.prof`, кэши и `.venv` — это задано в `.gitignore`.
 

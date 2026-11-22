@@ -113,10 +113,18 @@ def main() -> int:
             env.get("DB_BACKEND") == "postgresql",
             f"{name}: DB_BACKEND=postgresql",
         )
+        check(
+            "deploy/etc/cloud-application.env" in service.get("env_file", []),
+            f"{name}: env_file deploy/etc/cloud-application.env",
+        )
     check(
-        "127.0.0.1:8080:8000" in app.get("ports", []),
-        "app публикуется как 127.0.0.1:8080:8000",
+        "${APP_PUBLISH_IP}:8080:8000" in app.get("ports", []),
+        "app публикуется как ${APP_PUBLISH_IP}:8080:8000",
     )
+    app_healthcheck = " ".join(
+        str(item) for item in app.get("healthcheck", {}).get("test", [])
+    )
+    check("/status" in app_healthcheck, "app healthcheck проверяет /status")
     check(
         app.get("environment", {}).get("NOTIFICATION_SERVICE_URL")
         == "http://notification:9000",

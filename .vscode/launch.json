@@ -73,7 +73,7 @@
       "id": "labDir",
       "type": "pickString",
       "description": "Каталог лабораторной работы",
-      "default": "labs/lab-34",
+      "default": "labs/lab-39",
       "options": [
         "labs/lab-01",
         "labs/lab-02",
@@ -108,7 +108,11 @@
         "labs/lab-31",
         "labs/lab-32",
         "labs/lab-33",
-        "labs/lab-34"
+        "labs/lab-34",
+        "labs/lab-35",
+        "labs/lab-36",
+        "labs/lab-37",
+        "labs/lab-39"
       ]
     }
   ]
