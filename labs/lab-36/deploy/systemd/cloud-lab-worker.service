@@ -1,0 +1,15 @@
+[Unit]
+Description=Cloud Lab Worker for PM3 LR35
+After=network.target
+
+[Service]
+Type=simple
+User=nobody
+WorkingDirectory=/opt/cloud-lab
+ExecStart=/usr/bin/python3 /opt/cloud-lab/service_worker.py
+Restart=no
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

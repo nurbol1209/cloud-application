@@ -1,0 +1,197 @@
+Лабораторная работа № 32. Протокол отладки
+===========================================
+
+Сценарий: scripts/debug_notification_client.py
+URL: http://127.0.0.1:9999 (порт закрыт)
+NOTIFICATION_TIMEOUT_SECONDS=0.5
+NOTIFICATION_MAX_ATTEMPTS=3
+NOTIFICATION_RETRY_DELAY_SECONDS=0.1
+LOG_LEVEL=DEBUG
+
+Учебный дефект: граница диапазона цикла повторных попыток.
+
+    # до исправления
+    for attempt in range(1, max_attempts):
+
+    # после исправления
+    for attempt in range(1, max_attempts + 1):
+
+1. Воспроизведение дефекта (max_attempts=3)
+--------------------------------------------
+
+$ python scripts/debug_notification_client.py
+
+Configured max attempts: 3
+DEBUG   notification_request_attempt attempt=1
+WARNING notification_request_retry   attempt=1 error_type=ConnectTimeout
+DEBUG   notification_request_attempt attempt=2
+WARNING notification_request_retry   attempt=2 error_type=ConnectTimeout
+EXPECTED_RESULT: service unavailable
+
+Наблюдение: попыток только две вместо трёх, события
+notification_service_unavailable нет. Исключение возникает на
+резервном raise после цикла, поэтому последняя попытка не выполняется
+и итоговая ошибка не журналируется.
+
+2. Крайний случай дефекта (max_attempts=1)
+-------------------------------------------
+
+$ NOTIFICATION_MAX_ATTEMPTS=1 python scripts/debug_notification_client.py
+
+Configured max attempts: 1
+EXPECTED_RESULT: service unavailable
+
+Наблюдение: range(1, 1) пуст, не выполнено ни одной попытки.
+
+3. Точка останова и Watch в pdb
+-------------------------------
+
+Точка останова установлена после вычисления max_attempts.
+Сеанс pdb (сокращённо, служебные кадры asyncio опущены):
+
+(Pdb) p settings.notification_max_attempts
+3
+(Pdb) p max_attempts
+3
+(Pdb) p list(range(1, max_attempts))
+[1, 2]
+(Pdb) p list(range(1, max_attempts + 1))
+[1, 2, 3]
+(Pdb) where
+  ...
+  -> await send_notification(
+  -> breakpoint()
+
+Выражение list(range(1, max_attempts)) даёт [1, 2]: третья попытка
+в цикл не попадает. Выражение с +1 даёт [1, 2, 3].
+
+Значение url в Variables:
+
+(Pdb) p url
+'http://127.0.0.1:9999/notifications'
+
+Конфигурация прочитана правильно: проблема не в адресе сервиса.
+
+4. Условная точка останова
+--------------------------
+
+В кадре send_notification установлена точка останова на строке
+if attempt == max_attempts с условием attempt == 3:
+
+(Pdb) b 109
+(Pdb) condition 1 attempt == 3
+New condition set for breakpoint 1.
+(Pdb) c
+-> if attempt == max_attempts:
+(Pdb) p attempt
+3
+(Pdb) p attempt == max_attempts
+True
+(Pdb) bt
+  ...
+  -> await send_notification(
+  -> if attempt == max_attempts:
+(Pdb) c
+ERROR notification_service_unavailable attempt=3 error_type=ConnectTimeout
+EXPECTED_RESULT: service unavailable
+
+Для дефектного цикла эта точка останова не достигается: значения
+attempt ограничены 1 и 2.
+
+5. Встроенный breakpoint()
+--------------------------
+
+В код временно добавлен вызов breakpoint() после вычисления
+max_attempts. Запуск без отладчика останавливает выполнение в pdb:
+
+$ python scripts/debug_notification_client.py
+> .../app/integrations/notification_client.py(46)send_notification()
+-> breakpoint()
+(Pdb) p max_attempts
+3
+(Pdb) n
+(Pdb) c
+
+После проверки вызов breakpoint() удалён из исходного файла.
+
+6. После исправления (max_attempts=3)
+--------------------------------------
+
+$ python scripts/debug_notification_client.py
+
+Configured max attempts: 3
+DEBUG   notification_request_attempt attempt=1
+WARNING notification_request_retry   attempt=1 error_type=ConnectTimeout
+DEBUG   notification_request_attempt attempt=2
+WARNING notification_request_retry   attempt=2 error_type=ConnectTimeout
+DEBUG   notification_request_attempt attempt=3
+ERROR   notification_service_unavailable attempt=3 error_type=ConnectTimeout
+EXPECTED_RESULT: service unavailable
+
+7. После исправления (max_attempts=1)
+--------------------------------------
+
+$ NOTIFICATION_MAX_ATTEMPTS=1 python scripts/debug_notification_client.py
+
+Configured max attempts: 1
+DEBUG notification_request_attempt attempt=1
+ERROR notification_service_unavailable attempt=1 error_type=ConnectTimeout
+EXPECTED_RESULT: service unavailable
+
+8. Регрессия через HTTP (app + notification, SQLite)
+-----------------------------------------------------
+
+Успешный сценарий, X-Request-ID: lab32-final-201
+
+app:
+  DEBUG permission_granted
+  INFO  notification_request_started
+  DEBUG notification_request_attempt attempt=1
+  INFO  notification_request_completed status_code=201 attempt=1
+  INFO  http_request_completed path=/integration/notifications status_code=201
+
+notification:
+  INFO notification_created status_code=201 notification_id=2
+  INFO http_request_completed path=/notifications status_code=201
+
+HTTP/1.1 201
+{"id": 2, "recipient": "debug@cloud.local",
+ "message": "LR32 final regression", "status": "accepted"}
+
+Сценарий недоступности (notification остановлен),
+X-Request-ID: lab32-regression-down
+
+app:
+  DEBUG   permission_granted
+  INFO    notification_request_started
+  DEBUG   notification_request_attempt attempt=1
+  WARNING notification_request_retry   attempt=1 error_type=ConnectTimeout
+  DEBUG   notification_request_attempt attempt=2
+  WARNING notification_request_retry   attempt=2 error_type=ConnectTimeout
+  DEBUG   notification_request_attempt attempt=3
+  ERROR   notification_service_unavailable attempt=3 error_type=ConnectTimeout
+  INFO    http_request_completed status_code=503
+
+HTTP/1.1 503
+{"detail": "Notification service is unavailable"}
+
+Сценарий восстановления (notification запущен снова),
+X-Request-ID: lab32-regression-restored
+
+app:
+  DEBUG permission_granted
+  INFO  notification_request_started
+  DEBUG notification_request_attempt attempt=1
+  INFO  notification_request_completed status_code=201 attempt=1
+  INFO  http_request_completed status_code=201
+
+HTTP/1.1 201
+{"id": 1, "recipient": "debug@cloud.local",
+ "message": "LR32 recovered scenario", "status": "accepted"}
+
+9. Замечание об окружении
+-------------------------
+
+В Git Bash переменная NO_PROXY содержит [::1], что httpx 0.28.1
+разбирает как некорректный порт. Все локальные процессы запускались
+через env -u NO_PROXY. Код приложения не изменялся.

@@ -1,0 +1,45 @@
+== Локальная smoke-проверка (SQLite, Uvicorn 8000/9000) ==
+
+GET http://127.0.0.1:8000/status
+  -> 200
+
+GET http://127.0.0.1:8000/docs
+  -> 200
+
+Вход administrator (student03):
+
+POST /auth/login
+  -> access_token получен (32 символа, значение в отчёт не включено)
+
+Межсервисный запрос:
+
+POST /integration/notifications
+Authorization: Bearer <token>
+Content-Type: application/json
+X-Request-ID: lab34-smoke-201
+
+{"recipient": "operator@cloud.local", "message": "lab34 smoke"}
+
+HTTP/1.1 201 Created
+x-request-id: lab34-smoke-201
+{"id":1,"recipient":"operator@cloud.local","message":"lab34 smoke","status":"accepted"}
+
+Записи журнала app:
+
+INFO notification_request_started request_id=lab34-smoke-201 target_service=notification
+INFO notification_request_completed request_id=lab34-smoke-201 status_code=201 duration_ms=1061.31 attempt=1
+INFO http_request_completed request_id=lab34-smoke-201 method=POST path=/integration/notifications status_code=201 duration_ms=1088.18
+
+Записи журнала notification:
+
+INFO notification_created request_id=lab34-smoke-201 status_code=201 notification_id=1
+INFO http_request_completed request_id=lab34-smoke-201 method=POST path=/notifications status_code=201 duration_ms=8.67
+
+Пароли, токены и строки подключения в журнал не записывались.
+
+== Docker ==
+
+Docker Engine в среде выполнения отсутствует (docker: command not found),
+поэтому docker build -t cloud-application:0.7 и docker compose up не
+выполнялись. Конфигурация compose.yaml проверена статическим
+валидатором scripts/check_compose_config.py (PASS, 0.7).
