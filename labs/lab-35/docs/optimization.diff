@@ -1,0 +1,19 @@
+--- a/app/services/reporting.py
++++ b/app/services/reporting.py
+@@ -2,13 +2,11 @@
+     services: list[dict],
+     service_types: list[dict],
+ ) -> list[dict]:
++    types_by_id = {item["id"]: item["name"] for item in service_types}
++
+     report = []
+     for service in services:
+-        type_name = "unknown"
+-        for service_type in service_types:
+-            if service_type["id"] == service["type_id"]:
+-                type_name = service_type["name"]
+-                break
++        type_name = types_by_id.get(service["type_id"], "unknown")
+         report.append(
+             {
+                 "id": service["id"],
