@@ -1,0 +1,696 @@
+
+
+========== 1. Сведения о серверной среде ==========
+
+$ whoami
+root
+[exit=0]
+
+$ id
+uid=0(root) gid=0(root) groups=0(root)
+[exit=0]
+
+$ cat /etc/os-release
+PRETTY_NAME="Ubuntu 24.04.5 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.5 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+[exit=0]
+
+$ hostnamectl
+ Static hostname: ac88dabe5e7e
+       Icon name: computer-container
+         Chassis: container ☐
+      Machine ID: 426bd01b5bef4e359daef1a6e33105c4
+         Boot ID: a4c57e05055441c197037f917990be51
+  Virtualization: wsl
+Operating System: Ubuntu 24.04.5 LTS
+          Kernel: Linux 6.18.58.1-microsoft-standard-WSL2
+    Architecture: x86-64
+[exit=0]
+
+$ ps -p 1 -o comm=
+systemd
+[exit=0]
+
+$ systemctl --version
+systemd 255 (255.4-1ubuntu8.18)
++PAM +AUDIT +SELINUX +APPARMOR +IMA +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +IPTC +KMOD +LIBCRYPTSETUP +LIBFDISK +PCRE2 -PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD -BPF_FRAMEWORK -XKBCOMMON +UTMP +SYSVINIT default-hierarchy=unified
+[exit=0]
+
+$ systemd-analyze --version
+systemd 255 (255.4-1ubuntu8.18)
++PAM +AUDIT +SELINUX +APPARMOR +IMA +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +IPTC +KMOD +LIBCRYPTSETUP +LIBFDISK +PCRE2 -PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD -BPF_FRAMEWORK -XKBCOMMON +UTMP +SYSVINIT default-hierarchy=unified
+[exit=0]
+
+$ systemctl is-system-running
+running
+[exit=0]
+
+$ systemctl list-units --type=service --state=running --no-pager
+  UNIT                      LOAD   ACTIVE SUB     DESCRIPTION
+  dbus.service              loaded active running D-Bus System Message Bus
+  systemd-hostnamed.service loaded active running Hostname Service
+  systemd-journald.service  loaded active running Journal Service
+
+Legend: LOAD   -> Reflects whether the unit definition was properly loaded.
+        ACTIVE -> The high-level unit activation state, i.e. generalization of SUB.
+        SUB    -> The low-level unit activation state, values depend on unit type.
+
+3 loaded units listed.
+[exit=0]
+
+$ systemctl --failed --no-pager
+  UNIT LOAD ACTIVE SUB DESCRIPTION
+
+0 loaded units listed.
+[exit=0]
+
+Количество failed units до эксперимента: 0
+
+
+========== 2. Создание каталога и учебного процесса ==========
+
+$ install -d -m 0755 /opt/cloud-lab
+[exit=0]
+
+$ ls -ld /opt/cloud-lab
+drwxr-xr-x 2 root root 4096 Nov 22 12:44 /opt/cloud-lab
+[exit=0]
+
+$ install -m 0644 /work/deploy/systemd/service_worker.py /opt/cloud-lab/service_worker.py
+[exit=0]
+
+$ ls -l /opt/cloud-lab/service_worker.py
+-rw-r--r-- 1 root root 531 Nov 22 12:44 /opt/cloud-lab/service_worker.py
+[exit=0]
+
+$ cat /opt/cloud-lab/service_worker.py
+import sys
+import time
+
+from datetime import (
+    datetime,
+    timezone,
+)
+from pathlib import Path
+
+
+FAIL_FLAG = Path("/opt/cloud-lab/fail.flag")
+
+
+if FAIL_FLAG.exists():
+    print(
+        "STARTUP ERROR: fail.flag detected",
+        file=sys.stderr,
+        flush=True,
+    )
+    raise SystemExit(42)
+
+
+print(
+    "cloud-lab-worker started",
+    flush=True,
+)
+
+
+while True:
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    print(
+        "heartbeat",
+        timestamp,
+        flush=True,
+    )
+
+    time.sleep(5)
+[exit=0]
+
+
+========== 3. Создание и проверка unit-файла ==========
+
+$ install -m 0644 /work/deploy/systemd/cloud-lab-worker.service /etc/systemd/system/cloud-lab-worker.service
+[exit=0]
+
+$ systemctl cat cloud-lab-worker.service
+# /etc/systemd/system/cloud-lab-worker.service
+[Unit]
+Description=Cloud Lab Worker for PM3 LR35
+After=network.target
+
+[Service]
+Type=simple
+User=nobody
+WorkingDirectory=/opt/cloud-lab
+ExecStart=/usr/bin/python3 /opt/cloud-lab/service_worker.py
+Restart=no
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+[exit=0]
+
+$ systemd-analyze verify /etc/systemd/system/cloud-lab-worker.service
+/etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+[exit=0]
+
+$ systemctl daemon-reload
+[exit=0]
+
+
+========== 4. Состояние до первого запуска ==========
+
+$ systemctl status cloud-lab-worker.service --no-pager
+* cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35
+     Loaded: loaded (/etc/systemd/system/cloud-lab-worker.service; disabled; preset: enabled)
+     Active: inactive (dead)
+
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+[exit=3]
+
+$ systemctl is-active cloud-lab-worker.service
+inactive
+[exit=3]
+
+$ systemctl is-enabled cloud-lab-worker.service
+disabled
+[exit=1]
+
+
+========== 5. Запуск службы и проверка active (running) ==========
+
+$ systemctl start cloud-lab-worker.service
+[exit=0]
+
+$ systemctl is-active cloud-lab-worker.service
+active
+[exit=0]
+
+$ systemctl status cloud-lab-worker.service --no-pager
+* cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35
+     Loaded: loaded (/etc/systemd/system/cloud-lab-worker.service; disabled; preset: enabled)
+     Active: active (running) since Sun 2026-11-22 12:44:05 UTC; 13ms ago
+   Main PID: 100 (python3)
+      Tasks: 1 (limit: 9363)
+     Memory: 3.2M (peak: 3.2M)
+        CPU: 11ms
+     CGroup: /docker/ac88dabe5e7e70dc5270442e2bbfb4fb81bbb323e548e589bc35e75814757f78/system.slice/cloud-lab-worker.service
+             `-100 /usr/bin/python3 /opt/cloud-lab/service_worker.py
+
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+[exit=0]
+
+$ systemctl show cloud-lab-worker.service -p ActiveState -p SubState -p MainPID -p ExecMainStatus -p UnitFileState
+MainPID=100
+ExecMainStatus=0
+ActiveState=active
+SubState=running
+UnitFileState=disabled
+[exit=0]
+
+$ systemctl show cloud-lab-worker.service -p MainPID --value
+100
+[exit=0]
+
+MainPID после первого запуска: 100
+
+$ ps -fp 100
+UID          PID    PPID  C STIME TTY          TIME CMD
+nobody       100       1 16 12:44 ?        00:00:00 /usr/bin/python3 /opt/cloud-lab/service_worker.py
+[exit=0]
+
+
+========== 6. Остановка и повторный запуск ==========
+
+$ systemctl stop cloud-lab-worker.service
+[exit=0]
+
+$ systemctl is-active cloud-lab-worker.service
+inactive
+[exit=3]
+
+$ systemctl status cloud-lab-worker.service --no-pager
+* cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35
+     Loaded: loaded (/etc/systemd/system/cloud-lab-worker.service; disabled; preset: enabled)
+     Active: inactive (dead)
+
+Nov 22 12:44:05 ac88dabe5e7e python3[100]: cloud-lab-worker started
+Nov 22 12:44:05 ac88dabe5e7e python3[100]: heartbeat 2026-11-22T12:44:05.323649+00:00
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopping cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35...
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Deactivated successfully.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopped cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+[exit=3]
+
+$ systemctl start cloud-lab-worker.service
+[exit=0]
+
+MainPID после повторного запуска: 112
+
+
+========== 7. Перезапуск и сравнение PID ==========
+
+$ systemctl restart cloud-lab-worker.service
+[exit=0]
+
+PID до restart: 112
+PID после restart: 117
+
+$ systemctl is-active cloud-lab-worker.service
+active
+[exit=0]
+
+
+========== 8. Различие active и enabled: enable без start ==========
+
+$ systemctl stop cloud-lab-worker.service
+[exit=0]
+
+$ systemctl is-active cloud-lab-worker.service
+inactive
+[exit=3]
+
+$ systemctl enable cloud-lab-worker.service
+Created symlink /etc/systemd/system/multi-user.target.wants/cloud-lab-worker.service -> /etc/systemd/system/cloud-lab-worker.service.
+[exit=0]
+
+$ systemctl is-enabled cloud-lab-worker.service
+enabled
+[exit=0]
+
+$ systemctl is-active cloud-lab-worker.service
+inactive
+[exit=3]
+
+$ systemctl start cloud-lab-worker.service
+[exit=0]
+
+$ systemctl is-active cloud-lab-worker.service
+active
+[exit=0]
+
+$ systemctl is-enabled cloud-lab-worker.service
+enabled
+[exit=0]
+
+
+========== 9. Различие stop и disable: disable без stop ==========
+
+$ systemctl disable cloud-lab-worker.service
+Removed "/etc/systemd/system/multi-user.target.wants/cloud-lab-worker.service".
+[exit=0]
+
+$ systemctl is-enabled cloud-lab-worker.service
+disabled
+[exit=1]
+
+$ systemctl is-active cloud-lab-worker.service
+active
+[exit=0]
+
+$ systemctl enable cloud-lab-worker.service
+Created symlink /etc/systemd/system/multi-user.target.wants/cloud-lab-worker.service -> /etc/systemd/system/cloud-lab-worker.service.
+[exit=0]
+
+$ systemctl is-enabled cloud-lab-worker.service
+enabled
+[exit=0]
+
+
+========== 10. Журнал journalctl ==========
+
+$ journalctl -u cloud-lab-worker.service -n 20 --no-pager
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopping cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35...
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Deactivated successfully.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopped cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopping cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35...
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Deactivated successfully.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopped cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e python3[142]: cloud-lab-worker started
+Nov 22 12:44:05 ac88dabe5e7e python3[142]: heartbeat 2026-11-22T12:44:05.522765+00:00
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+[exit=0]
+
+$ journalctl -u cloud-lab-worker.service -b --no-pager | tail -25
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopped cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopping cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35...
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Deactivated successfully.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopped cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopping cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35...
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Deactivated successfully.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopped cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e python3[142]: cloud-lab-worker started
+Nov 22 12:44:05 ac88dabe5e7e python3[142]: heartbeat 2026-11-22T12:44:05.522765+00:00
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+[exit=0]
+
+$ journalctl -u cloud-lab-worker.service --since '5 minutes ago' --no-pager | tail -25
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopped cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopping cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35...
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Deactivated successfully.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopped cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopping cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35...
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Deactivated successfully.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopped cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e python3[142]: cloud-lab-worker started
+Nov 22 12:44:05 ac88dabe5e7e python3[142]: heartbeat 2026-11-22T12:44:05.522765+00:00
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+[exit=0]
+
+Команда: journalctl -f -u cloud-lab-worker.service (наблюдение 12 секунд)
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e python3[142]: cloud-lab-worker started
+Nov 22 12:44:05 ac88dabe5e7e python3[142]: heartbeat 2026-11-22T12:44:05.522765+00:00
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:10 ac88dabe5e7e python3[142]: heartbeat 2026-11-22T12:44:10.523090+00:00
+Nov 22 12:44:15 ac88dabe5e7e python3[142]: heartbeat 2026-11-22T12:44:15.523481+00:00
+
+[exit=124] (124 — завершение по timeout, это ожидаемо)
+
+$ systemctl is-active cloud-lab-worker.service
+active
+[exit=0]
+
+
+========== 11. Контролируемый отказ ==========
+
+$ touch /opt/cloud-lab/fail.flag
+[exit=0]
+
+$ ls -l /opt/cloud-lab/fail.flag
+-rw-r--r-- 1 root root 0 Nov 22 12:44 /opt/cloud-lab/fail.flag
+[exit=0]
+
+$ systemctl restart cloud-lab-worker.service
+[exit=0]
+
+$ systemctl is-active cloud-lab-worker.service
+failed
+[exit=3]
+
+$ systemctl is-failed cloud-lab-worker.service
+failed
+[exit=0]
+
+$ systemctl status cloud-lab-worker.service --no-pager
+x cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35
+     Loaded: loaded (/etc/systemd/system/cloud-lab-worker.service; enabled; preset: enabled)
+     Active: failed (Result: exit-code) since Sun 2026-11-22 12:44:17 UTC; 1s ago
+   Duration: 24ms
+    Process: 196 ExecStart=/usr/bin/python3 /opt/cloud-lab/service_worker.py (code=exited, status=42)
+   Main PID: 196 (code=exited, status=42)
+        CPU: 24ms
+
+Nov 22 12:44:17 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:17 ac88dabe5e7e python3[196]: STARTUP ERROR: fail.flag detected
+Nov 22 12:44:17 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Main process exited, code=exited, status=42/n/a
+Nov 22 12:44:17 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Failed with result 'exit-code'.
+[exit=3]
+
+$ systemctl show cloud-lab-worker.service -p ActiveState -p SubState -p Result -p ExecMainCode -p ExecMainStatus
+Result=exit-code
+ExecMainCode=1
+ExecMainStatus=42
+ActiveState=failed
+SubState=failed
+[exit=0]
+
+$ journalctl -u cloud-lab-worker.service -n 30 --no-pager
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopping cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35...
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Deactivated successfully.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopped cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopping cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35...
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Deactivated successfully.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Stopped cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e python3[142]: cloud-lab-worker started
+Nov 22 12:44:05 ac88dabe5e7e python3[142]: heartbeat 2026-11-22T12:44:05.522765+00:00
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:10 ac88dabe5e7e python3[142]: heartbeat 2026-11-22T12:44:10.523090+00:00
+Nov 22 12:44:15 ac88dabe5e7e python3[142]: heartbeat 2026-11-22T12:44:15.523481+00:00
+Nov 22 12:44:17 ac88dabe5e7e systemd[1]: Stopping cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35...
+Nov 22 12:44:17 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Deactivated successfully.
+Nov 22 12:44:17 ac88dabe5e7e systemd[1]: Stopped cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:17 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:17 ac88dabe5e7e python3[196]: STARTUP ERROR: fail.flag detected
+Nov 22 12:44:17 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Main process exited, code=exited, status=42/n/a
+Nov 22 12:44:17 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Failed with result 'exit-code'.
+[exit=0]
+
+$ systemctl --failed --no-pager
+  UNIT                     LOAD   ACTIVE SUB    DESCRIPTION
+* cloud-lab-worker.service loaded failed failed Cloud Lab Worker for PM3 LR35
+
+Legend: LOAD   -> Reflects whether the unit definition was properly loaded.
+        ACTIVE -> The high-level unit activation state, i.e. generalization of SUB.
+        SUB    -> The low-level unit activation state, values depend on unit type.
+
+1 loaded units listed.
+[exit=0]
+
+
+========== 12. Устранение причины, reset-failed и восстановление ==========
+
+$ rm /opt/cloud-lab/fail.flag
+[exit=0]
+
+$ test ! -e /opt/cloud-lab/fail.flag && echo 'fail flag removed'
+fail flag removed
+[exit=0]
+
+$ systemctl reset-failed cloud-lab-worker.service
+[exit=0]
+
+$ systemctl is-failed cloud-lab-worker.service
+inactive
+[exit=1]
+
+$ systemctl start cloud-lab-worker.service
+[exit=0]
+
+$ systemctl is-active cloud-lab-worker.service
+active
+[exit=0]
+
+$ journalctl -u cloud-lab-worker.service -n 20 --no-pager
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:05 ac88dabe5e7e python3[142]: cloud-lab-worker started
+Nov 22 12:44:05 ac88dabe5e7e python3[142]: heartbeat 2026-11-22T12:44:05.522765+00:00
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:05 ac88dabe5e7e systemd[1]: /etc/systemd/system/cloud-lab-worker.service:7: Special user nobody configured, this is not safe!
+Nov 22 12:44:10 ac88dabe5e7e python3[142]: heartbeat 2026-11-22T12:44:10.523090+00:00
+Nov 22 12:44:15 ac88dabe5e7e python3[142]: heartbeat 2026-11-22T12:44:15.523481+00:00
+Nov 22 12:44:17 ac88dabe5e7e systemd[1]: Stopping cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35...
+Nov 22 12:44:17 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Deactivated successfully.
+Nov 22 12:44:17 ac88dabe5e7e systemd[1]: Stopped cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:17 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:17 ac88dabe5e7e python3[196]: STARTUP ERROR: fail.flag detected
+Nov 22 12:44:17 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Main process exited, code=exited, status=42/n/a
+Nov 22 12:44:17 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Failed with result 'exit-code'.
+Nov 22 12:44:19 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+[exit=0]
+
+
+========== 13. Самостоятельное исследование свойств unit ==========
+
+$ systemctl show cloud-lab-worker.service -p Description -p LoadState -p ActiveState -p SubState -p UnitFileState -p User -p WorkingDirectory -p ExecStart -p MainPID
+MainPID=210
+ExecStart={ path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /opt/cloud-lab/service_worker.py ; ignore_errors=no ; start_time=[Sun 2026-11-22 12:44:19 UTC] ; stop_time=[n/a] ; pid=210 ; code=(null) ; status=0/0 }
+WorkingDirectory=/opt/cloud-lab
+User=nobody
+Description=Cloud Lab Worker for PM3 LR35
+LoadState=loaded
+ActiveState=active
+SubState=running
+UnitFileState=enabled
+[exit=0]
+
+
+========== 14. Дополнительное задание: Restart=on-failure ==========
+
+$ systemctl stop cloud-lab-worker.service
+[exit=0]
+
+$ sed -i 's/^Restart=no$/Restart=on-failure\nRestartSec=2/' /etc/systemd/system/cloud-lab-worker.service
+[exit=0]
+
+$ grep -n -E 'Restart' /etc/systemd/system/cloud-lab-worker.service
+10:Restart=on-failure
+11:RestartSec=2
+[exit=0]
+
+$ systemctl daemon-reload
+[exit=0]
+
+$ touch /opt/cloud-lab/fail.flag
+[exit=0]
+
+$ systemctl start cloud-lab-worker.service
+[exit=0]
+
+$ systemctl status cloud-lab-worker.service --no-pager
+* cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35
+     Loaded: loaded (/etc/systemd/system/cloud-lab-worker.service; enabled; preset: enabled)
+     Active: activating (auto-restart) (Result: exit-code) since Sun 2026-11-22 12:44:26 UTC; 1s ago
+    Process: 243 ExecStart=/usr/bin/python3 /opt/cloud-lab/service_worker.py (code=exited, status=42)
+   Main PID: 243 (code=exited, status=42)
+        CPU: 22ms
+[exit=3]
+
+$ systemctl show cloud-lab-worker.service -p NRestarts -p ActiveState -p SubState -p StartLimitBurst
+NRestarts=3
+ActiveState=activating
+SubState=auto-restart
+StartLimitBurst=5
+[exit=0]
+
+$ journalctl -u cloud-lab-worker.service -n 15 --no-pager
+Nov 22 12:44:22 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Scheduled restart job, restart counter is at 1.
+Nov 22 12:44:22 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:22 ac88dabe5e7e python3[239]: STARTUP ERROR: fail.flag detected
+Nov 22 12:44:22 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Main process exited, code=exited, status=42/n/a
+Nov 22 12:44:22 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Failed with result 'exit-code'.
+Nov 22 12:44:24 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Scheduled restart job, restart counter is at 2.
+Nov 22 12:44:24 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:24 ac88dabe5e7e python3[241]: STARTUP ERROR: fail.flag detected
+Nov 22 12:44:24 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Main process exited, code=exited, status=42/n/a
+Nov 22 12:44:24 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Failed with result 'exit-code'.
+Nov 22 12:44:26 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Scheduled restart job, restart counter is at 3.
+Nov 22 12:44:26 ac88dabe5e7e systemd[1]: Started cloud-lab-worker.service - Cloud Lab Worker for PM3 LR35.
+Nov 22 12:44:26 ac88dabe5e7e python3[243]: STARTUP ERROR: fail.flag detected
+Nov 22 12:44:26 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Main process exited, code=exited, status=42/n/a
+Nov 22 12:44:26 ac88dabe5e7e systemd[1]: cloud-lab-worker.service: Failed with result 'exit-code'.
+[exit=0]
+
+$ systemctl stop cloud-lab-worker.service
+[exit=0]
+
+$ rm -f /opt/cloud-lab/fail.flag
+[exit=0]
+
+$ install -m 0644 /work/deploy/systemd/cloud-lab-worker.service /etc/systemd/system/cloud-lab-worker.service
+[exit=0]
+
+$ systemctl daemon-reload
+[exit=0]
+
+$ systemctl reset-failed cloud-lab-worker.service
+[exit=0]
+
+$ systemctl start cloud-lab-worker.service
+[exit=0]
+
+$ systemctl is-active cloud-lab-worker.service
+active
+[exit=0]
+
+$ grep -n -E 'Restart' /etc/systemd/system/cloud-lab-worker.service
+10:Restart=no
+[exit=0]
+
+
+========== 15. Очистка учебной среды ==========
+
+$ systemctl disable --now cloud-lab-worker.service
+Removed "/etc/systemd/system/multi-user.target.wants/cloud-lab-worker.service".
+[exit=0]
+
+$ rm -f /etc/systemd/system/cloud-lab-worker.service
+[exit=0]
+
+$ rm -rf /opt/cloud-lab
+[exit=0]
+
+$ systemctl daemon-reload
+[exit=0]
+
+$ systemctl reset-failed
+[exit=0]
+
+$ systemctl status cloud-lab-worker.service --no-pager
+Unit cloud-lab-worker.service could not be found.
+[exit=4]
+
+Количество failed units после очистки: 0
+
+Все шаги ЛР 35 выполнены.
